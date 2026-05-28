@@ -4,16 +4,14 @@ import { NextResponse } from 'next/server'
 const isPortalRoute = createRouteMatcher(['/portal(.*)', '/api/portal(.*)'])
 const isAdminRoute  = createRouteMatcher(['/admin(.*)',  '/api/admin(.*)'])
 
-export default clerkMiddleware((auth, req) => {
-  // Portal: any logged-in user
+export default clerkMiddleware(async (auth, req) => {
   if (isPortalRoute(req)) {
-    auth().protect()
+    await auth.protect()
   }
 
-  // Admin: must have admin role
   if (isAdminRoute(req)) {
-    auth().protect()
-    const { sessionClaims } = auth()
+    await auth.protect()
+    const { sessionClaims } = await auth()
     if (sessionClaims?.metadata?.role !== 'admin') {
       return new NextResponse(null, { status: 404 })
     }
