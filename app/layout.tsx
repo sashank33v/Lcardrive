@@ -7,7 +7,7 @@ const geist = Geist({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'LCarDrive — Find a Driving Instructor Near You',
-  description: 'Find local, verified driving instructors across Melbourne. Compare prices, read reviews, and contact instructors directly.',
+  description: 'Find local, verified driving instructors across Melbourne.',
 }
 
 export const viewport: Viewport = {
@@ -17,9 +17,9 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ClerkProvider>
-      <html lang="en">
-        <body className={geist.className}>
+    <ClerkProvider dynamic>
+      <html lang="en" suppressHydrationWarning>
+        <body className={geist.className} suppressHydrationWarning>
           {children}
         </body>
       </html>
