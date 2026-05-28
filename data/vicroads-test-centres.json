@@ -1,0 +1,14 @@
+[
+  {"id":"sunshine","name":"Sunshine","suburb":"Sunshine","postcode":"3020"},
+  {"id":"moorabbin","name":"Moorabbin","suburb":"Moorabbin","postcode":"3189"},
+  {"id":"werribee","name":"Werribee","suburb":"Werribee","postcode":"3030"},
+  {"id":"bundoora","name":"Bundoora","suburb":"Bundoora","postcode":"3083"},
+  {"id":"epping","name":"Epping","suburb":"Epping","postcode":"3076"},
+  {"id":"dandenong","name":"Dandenong","suburb":"Dandenong","postcode":"3175"},
+  {"id":"frankston","name":"Frankston","suburb":"Frankston","postcode":"3199"},
+  {"id":"ringwood","name":"Ringwood","suburb":"Ringwood","postcode":"3134"},
+  {"id":"box_hill","name":"Box Hill","suburb":"Box Hill","postcode":"3128"},
+  {"id":"laverton","name":"Laverton","suburb":"Laverton","postcode":"3028"},
+  {"id":"heidelberg","name":"Heidelberg","suburb":"Heidelberg","postcode":"3084"},
+  {"id":"broadmeadows","name":"Broadmeadows","suburb":"Broadmeadows","postcode":"3047"}
+]
