@@ -1,13 +1,21 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { CheckCircle, XCircle, ExternalLink } from 'lucide-react'
+import Link from 'next/link'
+
+function getProfileUrl(instructor: any) {
+  if (!instructor?.suburb || !instructor?.slug) return '#'
+  const suburb = instructor.suburb.toLowerCase().replace(/\s+/g, '-')
+  return `/instructors/${suburb}/${instructor.slug}`
+}
 
 export default function AdminClaimsPage() {
   const [claims, setClaims]   = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   const fetchClaims = () => {
-    fetch('/api/admin/claims').then(r => r.json())
+    fetch('/api/admin/claims')
+      .then(r => r.json())
       .then(d => { setClaims(d.claims || []); setLoading(false) })
   }
 
@@ -39,6 +47,7 @@ export default function AdminClaimsPage() {
         {claims.map(c => (
           <div key={c.id} className="bg-white rounded-2xl p-5 shadow-sm">
             <div className="flex items-start justify-between gap-4">
+
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <p className="font-bold text-gray-900">
@@ -55,26 +64,17 @@ export default function AdminClaimsPage() {
               </div>
 
               <div className="flex gap-2 flex-shrink-0">
-                
-                  href={`/instructors/${c.instructors?.suburb?.toLowerCase().replace(/\s+/g, '-')}/${c.instructors?.slug}`}
-                  target="_blank"
-                  className="p-2 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-500"
-                >
+                <Link href={getProfileUrl(c.instructors)} target="_blank" className="p-2 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-500 flex items-center">
                   <ExternalLink size={16} />
-                </a>
-                <button
-                  onClick={() => action(c.id, c.instructor_id, 'reject')}
-                  className="flex items-center gap-1.5 px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-xl text-sm font-medium hover:bg-red-100"
-                >
+                </Link>
+                <button onClick={() => action(c.id, c.instructor_id, 'reject')} className="flex items-center gap-1.5 px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-xl text-sm font-medium hover:bg-red-100">
                   <XCircle size={15} /> Reject
                 </button>
-                <button
-                  onClick={() => action(c.id, c.instructor_id, 'approve')}
-                  className="flex items-center gap-1.5 px-4 py-2 bg-[#1A3CFF] text-white rounded-xl text-sm font-medium hover:bg-blue-700"
-                >
+                <button onClick={() => action(c.id, c.instructor_id, 'approve')} className="flex items-center gap-1.5 px-4 py-2 bg-[#1A3CFF] text-white rounded-xl text-sm font-medium hover:bg-blue-700">
                   <CheckCircle size={15} /> Approve
                 </button>
               </div>
+
             </div>
           </div>
         ))}

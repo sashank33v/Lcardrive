@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
   const { years_experience, licence_types, teaching_style, learner_types, proud_of, specialisations } = await req.json()
 
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
 
     const prompt = `Write a professional driving instructor bio for an Australian instructor.
 
