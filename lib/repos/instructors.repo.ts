@@ -1,4 +1,4 @@
-import { supabaseServer } from '@/lib/clients/supabase'
+import { supabaseServer } from '@/lib/clients/supabase-server'
 import type { SearchQuery } from '@/lib/schemas/instructor.schema'
 
 export async function searchInstructors(query: SearchQuery) {

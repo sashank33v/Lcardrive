@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
-import { supabaseServer } from '@/lib/clients/supabase'
+import { supabaseServer } from '@/lib/clients/supabase-server'
 
 export async function GET() {
   const { userId } = await auth()

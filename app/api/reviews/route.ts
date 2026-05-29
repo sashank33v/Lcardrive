@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseServer } from '@/lib/clients/supabase'
+import { supabaseServer } from '@/lib/clients/supabase-server'
 import { ReviewSubmitSchema } from '@/lib/schemas/instructor.schema'
 
 export async function POST(req: NextRequest) {

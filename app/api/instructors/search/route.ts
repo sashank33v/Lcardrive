@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { SearchQuerySchema } from '@/lib/schemas/instructor.schema'
 import { searchInstructors } from '@/lib/repos/instructors.repo'
-import { supabaseServer } from '@/lib/clients/supabase'
+import { supabaseServer } from '@/lib/clients/supabase-server'
 
 export async function GET(req: NextRequest) {
   try {

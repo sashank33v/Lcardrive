@@ -1,0 +1,7 @@
+import { createClient } from '@supabase/supabase-js'
+
+const url     = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const service = process.env.SUPABASE_SERVICE_ROLE_KEY!
+
+// Server-only client — NEVER import this in 'use client' components
+export const supabaseServer = createClient(url, service)
