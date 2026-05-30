@@ -6,22 +6,21 @@ import { Header } from '@/components/layout/header'
 import { BottomNav } from '@/components/layout/bottom-nav'
 import { InstructorCard } from '@/components/instructor/instructor-card'
 
-
 const QUESTIONS = [
-  { id: 'suburb',          label: 'What suburb are you in?',              type: 'text',   placeholder: 'e.g. Footscray' },
-  { id: 'transmission',    label: 'Automatic or manual?',                 type: 'choice', options: ['auto', 'manual', 'both'] },
-  { id: 'special_needs',   label: 'Any special requirements?',            type: 'multi',  options: ['anxiety', 'adhd', 'international', 'none'] },
-  { id: 'available_days',  label: 'Which days can you take lessons?',     type: 'multi',  options: ['mon','tue','wed','thu','fri','sat','sun'] },
-  { id: 'max_hourly_rate', label: 'What\'s your max budget per hour?',    type: 'range',  min: 40, max: 150 },
+  { id: 'suburb',          label: 'What suburb are you in?',           type: 'text',   placeholder: 'e.g. Footscray' },
+  { id: 'transmission',    label: 'Automatic or manual?',              type: 'choice', options: ['auto', 'manual', 'both'] },
+  { id: 'special_needs',   label: 'Any special requirements?',         type: 'multi',  options: ['anxiety', 'adhd', 'international', 'none'] },
+  { id: 'available_days',  label: 'Which days can you take lessons?',  type: 'multi',  options: ['mon','tue','wed','thu','fri','sat','sun'] },
+  { id: 'max_hourly_rate', label: "What's your max budget per hour?",  type: 'range',  min: 40, max: 150 },
 ]
 
 export default function FindMyInstructorPage() {
-  const [step, setStep]         = useState(0)
-  const [answers, setAnswers]   = useState<any>({ special_needs: [], available_days: [] })
-  const [loading, setLoading]   = useState(false)
-  const [matches, setMatches]   = useState<any[]>([])
+  const [step, setStep]       = useState(0)
+  const [answers, setAnswers] = useState<any>({ special_needs: [], available_days: [], max_hourly_rate: 150 })
+  const [loading, setLoading] = useState(false)
+  const [matches, setMatches] = useState<any[]>([])
   const [fallback, setFallback] = useState(false)
-  const [done, setDone]         = useState(false)
+  const [done, setDone]       = useState(false)
 
   const q = QUESTIONS[step]
 
@@ -31,7 +30,9 @@ export default function FindMyInstructorPage() {
     const current = answers[q.id] || []
     setAnswers((p: any) => ({
       ...p,
-      [q.id]: current.includes(val) ? current.filter((v: string) => v !== val) : [...current, val]
+      [q.id]: current.includes(val)
+        ? current.filter((v: string) => v !== val)
+        : [...current, val]
     }))
   }
 
@@ -41,32 +42,27 @@ export default function FindMyInstructorPage() {
   }
 
   const submit = async () => {
-    setLoading(true)
     setDone(true)
+    setLoading(true)
     try {
       const res  = await fetch('/api/ai/match', {
-        method: 'POST',
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...answers, max_hourly_rate: answers.max_hourly_rate || 150 })
+        body:    JSON.stringify({
+          suburb:          answers.suburb || '',
+          transmission:    answers.transmission || 'auto',
+          special_needs:   answers.special_needs || [],
+          available_days:  answers.available_days || [],
+          max_hourly_rate: answers.max_hourly_rate || 150,
+        })
       })
       const data = await res.json()
 
       if (data.fallback || !data.matches?.length) {
         setFallback(true)
-        return
+      } else {
+        setMatches(data.matches)
       }
-
-      // Fetch full instructor data for matched IDs
-      const ids = data.matches.map((m: any) => m.id)
-      const { data: instructors } = await supabaseBrowser
-        .from('instructors').select('*').in('id', ids)
-
-      const enriched = data.matches.map((m: any) => ({
-        ...instructors?.find((i: any) => i.id === m.id),
-        ai_reason: m.reason
-      })).filter(Boolean)
-
-      setMatches(enriched)
     } catch {
       setFallback(true)
     } finally {
@@ -74,12 +70,17 @@ export default function FindMyInstructorPage() {
     }
   }
 
+  const searchUrl = answers.suburb
+    ? `/search?suburb=${encodeURIComponent(answers.suburb)}`
+    : '/search'
+
   // Results screen
   if (done) {
     return (
       <div className="min-h-screen bg-[#F0F2FF]">
         <Header />
         <main className="max-w-2xl mx-auto px-4 py-6 pb-28">
+
           <Link href="/search" className="flex items-center gap-2 text-sm text-gray-500 mb-6 hover:text-gray-700">
             <ArrowLeft size={16} /> Back to search
           </Link>
@@ -88,7 +89,9 @@ export default function FindMyInstructorPage() {
             <div className="text-center py-20">
               <Loader2 size={40} className="text-[#1A3CFF] animate-spin mx-auto mb-4" />
               <p className="font-semibold text-gray-700">Finding your best matches...</p>
-              <p className="text-sm text-gray-500 mt-1">AI is analysing {answers.suburb} instructors</p>
+              <p className="text-sm text-gray-500 mt-1">
+                AI is analysing {answers.suburb || 'Melbourne'} instructors
+              </p>
             </div>
           )}
 
@@ -96,8 +99,10 @@ export default function FindMyInstructorPage() {
             <div className="text-center py-12">
               <p className="text-4xl mb-3">🔍</p>
               <h2 className="font-bold text-gray-900 text-xl mb-2">No matches found</h2>
-              <p className="text-gray-500 text-sm mb-6">Try broadening your search criteria</p>
-              <Link href={`/search?suburb=${answers.suburb}`}>
+              <p className="text-gray-500 text-sm mb-6">
+                Try broadening your search criteria
+              </p>
+              <Link href={searchUrl}>
                 <button className="bg-[#1A3CFF] text-white px-6 py-3 rounded-xl font-semibold">
                   Browse all instructors
                 </button>
@@ -108,28 +113,34 @@ export default function FindMyInstructorPage() {
           {!loading && matches.length > 0 && (
             <>
               <h2 className="font-bold text-gray-900 text-xl mb-1">Your top matches</h2>
-              <p className="text-gray-500 text-sm mb-5">AI selected these instructors based on your preferences</p>
+              <p className="text-gray-500 text-sm mb-5">
+                AI selected these based on your preferences
+              </p>
               <div className="space-y-4">
-                {matches.map((m, i) => (
-                  <div key={m.id}>
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="w-6 h-6 bg-[#1A3CFF] text-white text-xs font-bold rounded-full flex items-center justify-center">
-                        {i + 1}
-                      </span>
-                      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                        {i === 0 ? 'Best match' : i === 1 ? 'Runner up' : '3rd pick'}
-                      </span>
-                    </div>
-                    <InstructorCard {...m} />
-                    {m.ai_reason && (
-                      <div className="mt-2 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
-                        <p className="text-xs text-blue-700">
-                          <span className="font-semibold">✦ Why this match: </span>{m.ai_reason}
-                        </p>
+                {matches.map((m, i) => {
+                  const labels = ['Best match', 'Runner up', '3rd pick']
+                  return (
+                    <div key={m.id}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="w-6 h-6 bg-[#1A3CFF] text-white text-xs font-bold rounded-full flex items-center justify-center">
+                          {i + 1}
+                        </span>
+                        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                          {labels[i] || `Match ${i + 1}`}
+                        </span>
                       </div>
-                    )}
-                  </div>
-                ))}
+                      <InstructorCard {...m} />
+                      {m.ai_reason && (
+                        <div className="mt-2 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
+                          <p className="text-xs text-blue-700">
+                            <span className="font-semibold">✦ Why this match: </span>
+                            {m.ai_reason}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             </>
           )}
@@ -155,11 +166,15 @@ export default function FindMyInstructorPage() {
               <div key={i} className={`h-1.5 flex-1 rounded-full transition-colors ${i <= step ? 'bg-[#1A3CFF]' : 'bg-gray-200'}`} />
             ))}
           </div>
-          <Link href="/search" className="text-gray-400 hover:text-gray-600"><X size={20} /></Link>
+          <Link href="/search" className="text-gray-400 hover:text-gray-600">
+            <X size={20} />
+          </Link>
         </div>
 
         <div className="mb-8">
-          <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">Question {step + 1} of {QUESTIONS.length}</p>
+          <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">
+            Question {step + 1} of {QUESTIONS.length}
+          </p>
           <h2 className="text-2xl font-bold text-gray-900">{q.label}</h2>
         </div>
 
@@ -170,7 +185,7 @@ export default function FindMyInstructorPage() {
             type="text"
             value={answers[q.id] || ''}
             onChange={e => updateAnswer(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && next()}
+            onKeyDown={e => e.key === 'Enter' && answers[q.id] && next()}
             placeholder={q.placeholder}
             className="w-full border-2 border-gray-200 focus:border-[#1A3CFF] rounded-2xl px-5 py-4 text-lg outline-none bg-white transition-colors"
           />
@@ -205,7 +220,9 @@ export default function FindMyInstructorPage() {
                   key={opt}
                   onClick={() => toggleMulti(opt)}
                   className={`px-5 py-3 rounded-2xl font-medium capitalize border-2 transition-all ${
-                    active ? 'bg-[#1A3CFF] text-white border-[#1A3CFF]' : 'bg-white text-gray-700 border-gray-200 hover:border-[#1A3CFF]'
+                    active
+                      ? 'bg-[#1A3CFF] text-white border-[#1A3CFF]'
+                      : 'bg-white text-gray-700 border-gray-200 hover:border-[#1A3CFF]'
                   }`}
                 >
                   {opt}
@@ -243,6 +260,7 @@ export default function FindMyInstructorPage() {
             {step < QUESTIONS.length - 1 && <ArrowRight size={18} />}
           </button>
         )}
+
       </main>
       <BottomNav />
     </div>

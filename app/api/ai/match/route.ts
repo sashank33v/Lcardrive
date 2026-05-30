@@ -4,50 +4,102 @@ import { supabaseServer } from '@/lib/clients/supabase-server'
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
 
+async function getInstructors(suburb: string, transmission: string, maxRate: number) {
+  let query = supabaseServer
+    .from('instructors')
+    .select('id, first_name, last_name, suburb, state, hourly_rate, transmission, specialises_anxiety, accepts_international, average_rating, review_count, years_experience, slug, is_verified, is_claimed, profile_photo_url, profile_completeness')
+    .order('profile_completeness', { ascending: false })
+    .limit(20)
+
+  if (suburb) query = query.ilike('suburb', `%${suburb}%`)
+  if (transmission && transmission !== 'any') query = query.eq('transmission', transmission)
+  if (maxRate && maxRate < 150) query = query.lte('hourly_rate', maxRate)
+
+  const { data, error } = await query
+  if (error) console.error('DB error:', error)
+  return data || []
+}
+
 export async function POST(req: NextRequest) {
+  // Parse body ONCE at the top
+  let body: any = {}
   try {
-    const { suburb, transmission, special_needs, available_days, max_hourly_rate } = await req.json()
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ matches: [], fallback: true })
+  }
 
-    // Fetch top 20 instructors from DB — never trust client data
-    let query = supabaseServer.from('instructors').select('id, first_name, last_name, suburb, hourly_rate, transmission, specialises_anxiety, accepts_international, average_rating, review_count, years_experience, familiar_test_centres, languages').limit(20)
+  const { suburb = '', transmission = 'auto', special_needs = [], available_days = [], max_hourly_rate = 150 } = body
 
-    if (suburb)       query = query.ilike('suburb', `%${suburb}%`)
-    if (transmission && transmission !== 'any') query = query.eq('transmission', transmission)
-    if (max_hourly_rate) query = query.lte('hourly_rate', max_hourly_rate)
+  // Step 1: Always fetch instructors from DB first
+  const instructors = await getInstructors(suburb, transmission, max_hourly_rate)
 
-    const { data: instructors } = await query
+  console.log(`Found ${instructors.length} instructors for suburb: ${suburb}`)
 
-    if (!instructors || instructors.length === 0) {
-      return NextResponse.json({ matches: [], fallback: true })
-    }
+  if (instructors.length === 0) {
+    return NextResponse.json({ matches: [], fallback: true })
+  }
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
+  // Step 2: Try Gemini AI matching
+  try {
+    const model  = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
+
+    const sanitised = instructors.slice(0, 20).map(i => ({
+      id:                  i.id,
+      first_name:          i.first_name,
+      suburb:              i.suburb,
+      hourly_rate:         i.hourly_rate,
+      transmission:        i.transmission,
+      specialises_anxiety: i.specialises_anxiety,
+      accepts_international: i.accepts_international,
+      average_rating:      i.average_rating,
+      years_experience:    i.years_experience,
+    }))
 
     const prompt = `You are a driving instructor matching assistant for Australia.
 
 Learner preferences:
-- Suburb: ${suburb}
-- Transmission: ${transmission}
-- Special needs: ${special_needs?.join(', ') || 'none'}
-- Available days: ${available_days?.join(', ') || 'flexible'}
+- Suburb: ${suburb || 'any'}
+- Transmission: ${transmission || 'any'}
+- Special needs: ${special_needs.join(', ') || 'none'}
+- Available days: ${available_days.join(', ') || 'flexible'}
 - Max hourly rate: $${max_hourly_rate}/hr
 
-Available instructors:
-${JSON.stringify(instructors, null, 2)}
+Available instructors (JSON):
+${JSON.stringify(sanitised)}
 
-Return the top 3 best-matched instructor IDs with a short reason (max 20 words each).
-Respond ONLY with valid JSON: {"matches": [{"id": "...", "reason": "..."}]}`
+Pick the top 3 best matches. Return ONLY this JSON (no other text):
+{"matches":[{"id":"<id>","reason":"<max 15 words>"},{"id":"<id>","reason":"<max 15 words>"},{"id":"<id>","reason":"<max 15 words>"}]}`
 
-    const result = await model.generateContent(prompt)
-    const text   = result.response.text().trim()
+    const result   = await model.generateContent(prompt)
+    const text     = result.response.text().trim()
+    const clean    = text.replace(/```json|```/g, '').trim()
+    const parsed   = JSON.parse(clean)
 
-    // Clean and parse response
-    const clean   = text.replace(/```json|```/g, '').trim()
-    const parsed  = JSON.parse(clean)
+    const enriched = (parsed.matches || [])
+      .map((m: any) => {
+        const inst = instructors.find(i => i.id === m.id)
+        return inst ? { ...inst, ai_reason: m.reason } : null
+      })
+      .filter(Boolean)
 
-    return NextResponse.json(parsed)
+    if (enriched.length > 0) {
+      console.log(`AI matched ${enriched.length} instructors`)
+      return NextResponse.json({ matches: enriched, fallback: false })
+    }
+
+    // AI returned no valid matches — fall back to top 3
+    throw new Error('No valid AI matches')
+
   } catch (err) {
-    console.error('AI match error:', err)
-    return NextResponse.json({ matches: [], fallback: true })
+    console.error('AI failed, using top 3 fallback:', err)
+
+    // Step 3: Always return top 3 from DB if AI fails
+    const top3 = instructors.slice(0, 3).map(i => ({
+      ...i,
+      ai_reason: `Highly rated instructor in ${i.suburb} with ${i.years_experience || 'several'} years experience.`
+    }))
+
+    return NextResponse.json({ matches: top3, fallback: false })
   }
 }

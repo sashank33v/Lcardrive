@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { Save, Sparkles, Loader2 } from 'lucide-react'
+import { PhotoUpload } from '@/components/instructor/photo-upload'
 
 export default function PortalProfilePage() {
   const [form, setForm]       = useState<any>({})
@@ -72,9 +73,13 @@ export default function PortalProfilePage() {
         </button>
       </div>
 
-      {/* Personal info */}
+{/* Personal info */}
       <div className="bg-white rounded-2xl p-5 space-y-4">
         <h2 className="font-bold text-gray-900">Personal Information</h2>
+        <PhotoUpload
+          currentPhoto={form.profile_photo_url}
+          onUploaded={url => update('profile_photo_url', url)}
+        />
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className={labelClass}>First Name</label>
