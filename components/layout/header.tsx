@@ -21,12 +21,10 @@ export function Header() {
     <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
       <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
 
-        {/* Logo */}
         <Link href="/" className="font-bold text-[#1A3CFF] text-lg flex-shrink-0">
           LCarDrive
         </Link>
 
-        {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-1">
           {NAV.map(({ href, label }) => (
             <Link
@@ -44,7 +42,6 @@ export function Header() {
           ))}
         </nav>
 
-        {/* Desktop right */}
         <div className="hidden md:flex items-center gap-3">
           <Link
             href="/search"
@@ -54,7 +51,7 @@ export function Header() {
             <span>Search instructors...</span>
           </Link>
           {isSignedIn ? (
-            <UserButton afterSignOutUrl="/" />
+            <UserButton />
           ) : (
             <Link href="/sign-in">
               <button className="text-sm font-semibold text-[#1A3CFF] hover:underline">
@@ -64,12 +61,11 @@ export function Header() {
           )}
         </div>
 
-        {/* Mobile right */}
         <div className="flex md:hidden items-center gap-3">
           <Link href="/search" className="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-50">
             <Search size={18} className="text-gray-600" />
           </Link>
-          {isSignedIn && <UserButton afterSignOutUrl="/" />}
+          {isSignedIn && <UserButton />}
           <button
             onClick={() => setOpen(!open)}
             className="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-50"
@@ -83,7 +79,6 @@ export function Header() {
         </div>
       </div>
 
-      {/* Mobile menu */}
       {open && (
         <div className="md:hidden bg-white border-t border-gray-100 px-4 py-3 space-y-1">
           {NAV.map(({ href, label }) => (

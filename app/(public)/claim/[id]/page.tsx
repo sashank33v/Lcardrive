@@ -1,112 +1,168 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import { useAuth, SignIn } from '@clerk/nextjs'
-import { CheckCircle, Loader2 } from 'lucide-react'
+import { useParams } from 'next/navigation'
+import { SignIn, useUser } from '@clerk/nextjs'
+import { Loader2, ShieldCheck, CheckCircle } from 'lucide-react'
+import toast from 'react-hot-toast'
 import { Header } from '@/components/layout/header'
+import { BottomNav } from '@/components/layout/bottom-nav'
 
 export default function ClaimPage() {
-  const { id }          = useParams()
-  const { isSignedIn, isLoaded } = useAuth()
-  const router          = useRouter()
+  const params = useParams()
+  const id     = params.id as string
+  const { isSignedIn, isLoaded } = useUser()
 
   const [instructor, setInstructor] = useState<any>(null)
-  const [adi, setAdi]               = useState('')
-  const [loading, setLoading]       = useState(false)
-  const [success, setSuccess]       = useState(false)
-  const [error, setError]           = useState('')
+  const [loading,    setLoading]    = useState(true)
+  const [adi,        setAdi]        = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [submitted,  setSubmitted]  = useState(false)
 
   useEffect(() => {
     fetch(`/api/instructors/${id}`)
       .then(r => r.json())
-      .then(d => setInstructor(d.instructor))
+      .then(d => {
+        if (d.instructor) setInstructor(d.instructor)
+        setLoading(false)
+      })
   }, [id])
 
   const submit = async () => {
-    if (!adi.trim()) { setError('Please enter your ADI registration number'); return }
-    setLoading(true)
-    setError('')
+    if (!adi.trim()) {
+      toast.error('Please enter your ADI registration number')
+      return
+    }
+    setSubmitting(true)
     try {
       const res  = await fetch('/api/claims', {
-        method: 'POST',
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ instructor_id: id, adi_registration: adi })
+        body: JSON.stringify({ instructor_id: id, adi_registration: adi.trim() })
       })
       const data = await res.json()
-      if (!res.ok) { setError(data.error || 'Failed to submit claim'); return }
-      setSuccess(true)
+      if (!res.ok) {
+        toast.error(data.error || 'Failed to submit claim')
+        return
+      }
+      setSubmitted(true)
+      toast.success('Claim submitted! We\'ll verify within 48 hours.')
     } catch {
-      setError('Something went wrong. Please try again.')
+      toast.error('Something went wrong. Please try again.')
     } finally {
-      setLoading(false)
+      setSubmitting(false)
     }
   }
 
-  if (!isLoaded) return <div className="min-h-screen bg-[#F0F2FF]" />
-
-  if (success) return (
-    <div className="min-h-screen bg-[#F0F2FF] flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl p-8 max-w-md w-full text-center shadow-sm">
-        <CheckCircle size={48} className="text-green-500 mx-auto mb-4" />
-        <h2 className="text-xl font-bold text-gray-900 mb-2">Claim submitted!</h2>
-        <p className="text-gray-500 text-sm mb-6">
-          We'll verify your ADI number within 24–48 hours. You'll receive an email when your profile is verified.
-        </p>
-        <button onClick={() => router.push('/portal')}
-          className="w-full bg-[#1A3CFF] text-white font-semibold py-3 rounded-xl">
-          Go to Portal
-        </button>
+  if (loading || !isLoaded) {
+    return (
+      <div className="min-h-screen bg-[#F0F2FF] flex items-center justify-center">
+        <Loader2 size={32} className="text-[#1A3CFF] animate-spin" />
       </div>
-    </div>
-  )
+    )
+  }
+
+  if (!instructor) {
+    return (
+      <div className="min-h-screen bg-[#F0F2FF]">
+        <Header />
+        <main className="max-w-md mx-auto px-4 py-12 text-center">
+          <p className="text-gray-500">Instructor not found.</p>
+        </main>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-[#F0F2FF]">
       <Header />
-      <main className="max-w-lg mx-auto px-4 py-8">
 
-        <div className="bg-white rounded-2xl p-6 shadow-sm mb-4">
-          <h1 className="text-xl font-bold text-gray-900 mb-1">Claim this profile</h1>
-          <p className="text-gray-500 text-sm mb-4">
-            Verify you are this instructor to unlock your free profile.
+      <main className="max-w-md mx-auto px-4 py-8 pb-24">
+
+        {/* Header */}
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-50 rounded-2xl mb-4">
+            <ShieldCheck size={26} className="text-[#1A3CFF]" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">Claim this profile</h1>
+          <p className="text-sm text-gray-500">
+            Verify you're <strong>{instructor.first_name} {instructor.last_name}</strong> in {instructor.suburb}
           </p>
-          {instructor && (
-            <div className="bg-[#F0F2FF] rounded-xl p-4 mb-4">
-              <p className="font-bold text-gray-900">{instructor.first_name} {instructor.last_name}</p>
-              <p className="text-sm text-gray-500">{instructor.suburb}, VIC</p>
-            </div>
-          )}
         </div>
 
-        {!isSignedIn ? (
-          <div className="flex justify-center">
-            <SignIn redirectUrl={`/claim/${id}`} />
+        {/* Already claimed */}
+        {instructor.is_claimed && !submitted && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 mb-4 text-center">
+            <p className="text-sm text-yellow-800 font-semibold">⚠️ This profile has already been claimed.</p>
+            <p className="text-xs text-yellow-700 mt-1">If you believe this is an error, please contact support.</p>
           </div>
-        ) : (
-          <div className="bg-white rounded-2xl p-6 shadow-sm">
-            <h2 className="font-bold text-gray-900 mb-4">Enter your ADI registration number</h2>
-            <input
-              type="text"
-              value={adi}
-              onChange={e => setAdi(e.target.value)}
-              placeholder="e.g. ADI123456"
-              className="w-full border-2 border-gray-200 focus:border-[#1A3CFF] rounded-xl px-4 py-3 outline-none mb-3 transition-colors"
-            />
-            {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
-            <p className="text-xs text-gray-400 mb-4">
-              Your ADI number is on your VicRoads instructor licence. An admin will verify it within 24–48 hours.
-            </p>
+        )}
+
+        {/* Sign in required */}
+        {!isSignedIn && !instructor.is_claimed && (
+          <div className="flex justify-center">
+            <SignIn forceRedirectUrl={`/claim/${id}`} />
+          </div>
+        )}
+
+        {/* Claim form */}
+        {isSignedIn && !instructor.is_claimed && !submitted && (
+          <div className="bg-white rounded-2xl p-6 shadow-sm space-y-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                ADI Registration Number <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={adi}
+                onChange={e => setAdi(e.target.value.toUpperCase())}
+                placeholder="e.g. ADI123456"
+                className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#1A3CFF] transition-colors"
+              />
+              <p className="text-xs text-gray-400 mt-1.5">
+                Your VicRoads Accredited Driving Instructor number
+              </p>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-100 rounded-xl p-3">
+              <p className="text-xs text-blue-800 leading-relaxed">
+                <strong>Verification process:</strong> Our team will verify your ADI number against VicRoads records within <strong>24–48 hours</strong>. You'll receive an email when approved.
+              </p>
+            </div>
+
             <button
               onClick={submit}
-              disabled={loading}
-              className="w-full bg-[#1A3CFF] text-white font-semibold py-3.5 rounded-xl flex items-center justify-center gap-2 hover:bg-blue-700 disabled:opacity-50"
+              disabled={submitting || !adi.trim()}
+              className="w-full bg-[#1A3CFF] text-white font-semibold py-3.5 rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
             >
-              {loading ? <Loader2 size={18} className="animate-spin" /> : null}
-              {loading ? 'Submitting...' : 'Submit Claim'}
+              {submitting
+                ? <><Loader2 size={16} className="animate-spin" /> Submitting...</>
+                : 'Submit Claim'
+              }
             </button>
           </div>
         )}
+
+        {/* Submitted state */}
+        {submitted && (
+          <div className="bg-green-50 border border-green-200 rounded-2xl p-6 text-center">
+            <div className="inline-flex items-center justify-center w-14 h-14 bg-green-100 rounded-2xl mb-3">
+              <CheckCircle size={26} className="text-green-600" />
+            </div>
+            <h2 className="font-bold text-green-900 text-lg mb-1">Claim submitted!</h2>
+            <p className="text-sm text-green-700 mb-4">
+              We've received your claim and will verify within 48 hours. Check your email for updates.
+            </p>
+            <a href="/portal">
+              <button className="bg-[#1A3CFF] text-white font-semibold px-6 py-2.5 rounded-xl hover:bg-blue-700 text-sm">
+                Go to Portal
+              </button>
+            </a>
+          </div>
+        )}
+
       </main>
+
+      <BottomNav />
     </div>
   )
 }

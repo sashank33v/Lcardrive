@@ -4,9 +4,9 @@ import { Search, MapPin, Loader2, X } from 'lucide-react'
 
 interface Suggestion {
   display: string
-  suburb: string
-  lat: number
-  lng: number
+  suburb:  string
+  lat:     number
+  lng:     number
 }
 
 interface Props {
@@ -20,7 +20,7 @@ export function SuburbAutocomplete({ value, onChange, onSelect, placeholder = 'S
   const [suggestions, setSuggestions] = useState<Suggestion[]>([])
   const [loading, setLoading]         = useState(false)
   const [open, setOpen]               = useState(false)
-  const debounceRef                   = useRef<NodeJS.Timeout>()
+  const debounceRef                   = useRef<NodeJS.Timeout | null>(null)
   const wrapperRef                    = useRef<HTMLDivElement>(null)
 
   // Close dropdown when clicking outside
@@ -91,13 +91,12 @@ export function SuburbAutocomplete({ value, onChange, onSelect, placeholder = 'S
         />
         {loading && <Loader2 size={15} className="text-gray-400 animate-spin" />}
         {value && !loading && (
-          <button onClick={() => { onChange(''); setSuggestions([]) }}>
+          <button onClick={() => { onChange(''); setSuggestions([]) }} aria-label="Clear search">
             <X size={15} className="text-gray-400" />
           </button>
         )}
       </div>
 
-      {/* Dropdown */}
       {open && suggestions.length > 0 && (
         <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden max-h-72 overflow-y-auto">
           {suggestions.map((s, i) => (
@@ -106,7 +105,7 @@ export function SuburbAutocomplete({ value, onChange, onSelect, placeholder = 'S
               onClick={() => handleSelect(s)}
               className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0"
             >
-              <MapPin size={15} className="text-[#1A3CFF] flex-shrink-0" />
+              <MapPin size={15} className="text-[#1A3CFF] flex-shrink-0" aria-hidden="true" />
               <span className="text-sm text-gray-700 truncate">{s.display}</span>
             </button>
           ))}

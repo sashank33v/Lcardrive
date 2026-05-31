@@ -23,9 +23,7 @@ export const metadata: Metadata = {
     title:       'Find a Driving Instructor | LCarDrive',
     description: 'Local, verified driving instructors across Melbourne.',
   },
-  alternates: {
-    canonical: 'https://lcardrive.com.au',
-  },
+  alternates: { canonical: 'https://lcardrive.com.au' },
 }
 
 export default function HomePage() {
@@ -45,11 +43,11 @@ export default function HomePage() {
       <Header />
       <OrganisationJsonLd />
 
-      <main className="pb-24 md:pb-12">
+      <main id="main-content" className="pb-24 md:pb-12">
         <div className="max-w-6xl mx-auto px-4">
 
           {/* Hero */}
-          <section className="pt-6 pb-4 md:pt-12 md:pb-10 md:grid md:grid-cols-2 md:gap-12 md:items-start">
+          <section className="pt-6 pb-4 md:pt-12 md:pb-10 md:grid md:grid-cols-2 md:gap-12 md:items-start" aria-label="Hero section">
             <div>
               <h1 className="text-3xl md:text-5xl font-bold text-gray-900 leading-tight mb-3">
                 Find your perfect<br />driving instructor.
@@ -61,7 +59,7 @@ export default function HomePage() {
             </div>
 
             {/* Desktop AI banner */}
-            <div className="hidden md:block pt-16">
+            <div className="hidden md:block pt-16" aria-label="AI matching feature">
               <div className="bg-[#1A3CFF] rounded-2xl p-8 relative overflow-hidden">
                 <div className="relative z-10">
                   <p className="text-blue-200 text-sm font-medium uppercase tracking-wide mb-2">✦ AI-Powered</p>
@@ -71,17 +69,17 @@ export default function HomePage() {
                   </p>
                   <Link href="/find-my-instructor">
                     <button className="flex items-center gap-2 bg-white text-[#1A3CFF] font-semibold px-6 py-3 rounded-xl hover:bg-blue-50 transition-colors">
-                      ✦ Try AI Match <ArrowRight size={16} />
+                      ✦ Try AI Match <ArrowRight size={16} aria-hidden="true" />
                     </button>
                   </Link>
                 </div>
-                <div className="absolute right-6 bottom-4 text-white/10 text-9xl select-none pointer-events-none">🤖</div>
+                <div className="absolute right-6 bottom-4 text-white/10 text-9xl select-none pointer-events-none" aria-hidden="true">🤖</div>
               </div>
             </div>
           </section>
 
           {/* Mobile AI banner */}
-          <section className="md:hidden mb-6">
+          <section className="md:hidden mb-6" aria-label="AI matching feature">
             <div className="bg-[#1A3CFF] rounded-2xl p-5 relative overflow-hidden">
               <div className="relative z-10">
                 <h2 className="text-white font-bold text-lg mb-1">Not sure who to pick?</h2>
@@ -92,18 +90,18 @@ export default function HomePage() {
                   </button>
                 </Link>
               </div>
-              <div className="absolute right-4 bottom-0 text-white/20 text-7xl select-none pointer-events-none">🤖</div>
+              <div className="absolute right-4 bottom-0 text-white/20 text-7xl select-none pointer-events-none" aria-hidden="true">🤖</div>
             </div>
           </section>
 
           {/* Stats */}
-          <section className="grid grid-cols-2 gap-3 mb-8">
+          <section className="grid grid-cols-2 gap-3 mb-8" aria-label="Platform statistics">
             {[
-              { value: '96+',   label: 'Verified Instructors', icon: Shield, bg: 'bg-blue-50',   color: 'text-[#1A3CFF]'                 },
-              { value: '4.9/5', label: 'Average Star Rating',  icon: Star,   bg: 'bg-yellow-50', color: 'text-yellow-500 fill-yellow-500' },
+              { value: '96+',   label: 'Verified Instructors', icon: Shield, bg: 'bg-blue-50',   color: 'text-[#1A3CFF]'                  },
+              { value: '4.9/5', label: 'Average Star Rating',  icon: Star,   bg: 'bg-yellow-50', color: 'text-yellow-500 fill-yellow-500'  },
             ].map(({ value, label, icon: Icon, bg, color }) => (
               <div key={label} className="bg-white rounded-2xl px-4 py-3.5 flex items-center gap-3 shadow-sm">
-                <div className={`w-10 h-10 ${bg} rounded-full flex items-center justify-center flex-shrink-0`}>
+                <div className={`w-10 h-10 ${bg} rounded-full flex items-center justify-center flex-shrink-0`} aria-hidden="true">
                   <Icon size={20} className={color} />
                 </div>
                 <div>
@@ -114,8 +112,8 @@ export default function HomePage() {
             ))}
           </section>
 
-          {/* How it works (desktop) */}
-          <section className="hidden md:block mb-10">
+          {/* How it works — desktop */}
+          <section className="hidden md:block mb-10" aria-label="How LCarDrive works">
             <h2 className="font-bold text-gray-900 text-2xl mb-6 text-center">How it works</h2>
             <div className="grid grid-cols-3 gap-6">
               {[
@@ -124,7 +122,7 @@ export default function HomePage() {
                 { step: '3', title: 'Contact', desc: 'Reach out directly — no booking fees, no middleman, no commission'        },
               ].map(({ step, title, desc }) => (
                 <div key={step} className="bg-white rounded-2xl p-6 text-center shadow-sm">
-                  <div className="w-10 h-10 bg-[#1A3CFF] rounded-full flex items-center justify-center mx-auto mb-3">
+                  <div className="w-10 h-10 bg-[#1A3CFF] rounded-full flex items-center justify-center mx-auto mb-3" aria-hidden="true">
                     <span className="text-white font-bold">{step}</span>
                   </div>
                   <h3 className="font-bold text-gray-900 mb-1">{title}</h3>
@@ -135,11 +133,11 @@ export default function HomePage() {
           </section>
 
           {/* Browse by Suburb */}
-          <section className="mb-8">
+          <section className="mb-8" aria-label="Browse instructors by suburb">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-bold text-gray-900 text-lg md:text-2xl">Browse by Suburb</h2>
               <Link href="/search" className="text-sm text-[#1A3CFF] font-medium flex items-center gap-1 hover:underline">
-                View all <ArrowRight size={14} />
+                View all <ArrowRight size={14} aria-hidden="true" />
               </Link>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -147,10 +145,11 @@ export default function HomePage() {
                 <Link
                   key={name}
                   href={`/instructors-in/${name.toLowerCase().replace(/\s+/g, '-')}`}
-                  className="relative rounded-2xl overflow-hidden h-28 md:h-36 hover:opacity-90 hover:scale-[1.02] transition-all"
+                  className="relative rounded-2xl overflow-hidden h-28 md:h-36 hover:opacity-90 hover:scale-[1.02] transition-all focus-visible:ring-2 focus-visible:ring-[#1A3CFF]"
+                  aria-label={`${count} driving instructors in ${name}`}
                 >
-                  <div className={`absolute inset-0 bg-gradient-to-br ${gradient}`} />
-                  <div className="absolute inset-0 bg-black/20" />
+                  <div className={`absolute inset-0 bg-gradient-to-br ${gradient}`} aria-hidden="true" />
+                  <div className="absolute inset-0 bg-black/20" aria-hidden="true" />
                   <div className="absolute bottom-0 left-0 right-0 p-3">
                     <p className="text-white font-bold text-sm">{name}</p>
                     <p className="text-white/80 text-xs">{count} Instructors</p>
@@ -160,8 +159,11 @@ export default function HomePage() {
             </div>
           </section>
 
-          {/* For Instructors strip */}
-          <section className="bg-white rounded-2xl p-6 md:p-8 text-center md:flex md:items-center md:justify-between md:text-left mb-8 shadow-sm">
+          {/* For Instructors */}
+          <section
+            className="bg-white rounded-2xl p-6 md:p-8 text-center md:flex md:items-center md:justify-between md:text-left mb-8 shadow-sm"
+            aria-label="Call to action for driving instructors"
+          >
             <div className="mb-4 md:mb-0">
               <h2 className="font-bold text-gray-900 text-lg">Are you a driving instructor?</h2>
               <p className="text-gray-500 text-sm mt-1">Claim your free profile and get found by learners in your area. No subscription fees.</p>

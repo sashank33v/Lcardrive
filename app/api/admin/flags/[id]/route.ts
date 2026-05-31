@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { supabaseServer } from '@/lib/clients/supabase-server'
 
-export async function DELETE(
+export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -10,14 +10,20 @@ export async function DELETE(
   const role    = authObj.sessionClaims?.metadata?.role ?? authObj.sessionClaims?.publicMetadata?.role
   if (role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-  const { id } = await params
+  const { id }                    = await params
+  const { action, instructor_id } = await req.json()
 
-  const { error } = await supabaseServer
-    .from('instructors')
-    .delete()
+  if (action === 'resolve' && instructor_id) {
+    await supabaseServer
+      .from('instructors')
+      .update({ is_verified: false, is_claimed: false })
+      .eq('id', instructor_id)
+  }
+
+  await supabaseServer
+    .from('listing_flags')
+    .update({ is_resolved: true, resolved_at: new Date().toISOString() })
     .eq('id', id)
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   return NextResponse.json({ success: true })
 }
