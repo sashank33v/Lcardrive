@@ -26,6 +26,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <ClerkProvider dynamic>
       <html lang="en" suppressHydrationWarning>
+        <head>
+          <link rel="preconnect" href="https://mjwijdzcazwnidvfryhd.supabase.co" />
+          <link rel="preconnect" href="https://api.locationiq.com" />
+          <link rel="dns-prefetch" href="https://big-leech-22.clerk.accounts.dev" />
+        </head>
         <body className={GeistSans.className} suppressHydrationWarning>
           <a href="#main-content" className={skipLinkClass}>Skip to main content</a>
           <div id="main-content">{children}</div>

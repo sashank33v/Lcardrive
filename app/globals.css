@@ -124,3 +124,6 @@ input[type="range"]::-moz-range-thumb {
 /* ── Hide scrollbar but keep scroll ── */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── Accessibility — ensure all text colors meet WCAG AA ── */
+.text-gray-400 { color: #6B7280 !important; } /* was too light */
