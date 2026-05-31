@@ -1,38 +1,55 @@
 import { supabaseServer } from '@/lib/clients/supabase-server'
-import type { SearchQuery } from '@/lib/schemas/instructor.schema'
 
-export async function searchInstructors(query: SearchQuery) {
-  const PAGE_SIZE = 20
-  let q = supabaseServer.from('instructors').select('*', { count: 'exact' })
+export async function searchInstructors(params: {
+  suburb?:       string
+  transmission?: string
+  max_price?:    number
+  anxiety?:      boolean
+  intl?:         boolean
+  sort?:         string
+  limit?:        number
+  offset?:       number
+}) {
+  let query = supabaseServer
+    .from('instructors')
+    .select('id, slug, first_name, last_name, suburb, state, postcode, hourly_rate, average_rating, review_count, transmission, is_verified, is_claimed, profile_photo_url, specialises_anxiety, accepts_international, years_experience, profile_completeness, languages, availability_days', { count: 'exact' })
 
-  if (query.suburb)       q = q.ilike('suburb', `%${query.suburb}%`)
-  if (query.transmission) q = q.eq('transmission', query.transmission)
-  if (query.max_price)    q = q.lte('hourly_rate', query.max_price)
-  if (query.anxiety)      q = q.eq('specialises_anxiety', true)
-  if (query.intl)         q = q.eq('accepts_international', true)
+  if (params.suburb)       query = query.ilike('suburb', `%${params.suburb}%`)
+  if (params.transmission) query = query.or(`transmission.eq.${params.transmission},transmission.eq.both`)
+  if (params.max_price)    query = query.lte('hourly_rate', params.max_price)
+  if (params.anxiety)      query = query.eq('specialises_anxiety', true)
+  if (params.intl)         query = query.eq('accepts_international', true)
 
-  switch (query.sort) {
-    case 'price_asc': q = q.order('hourly_rate',          { ascending: true  }); break
-    case 'rating':    q = q.order('average_rating',       { ascending: false }); break
-    case 'newest':    q = q.order('created_at',           { ascending: false }); break
-    default:          q = q.order('profile_completeness', { ascending: false })
+  switch (params.sort) {
+    case 'price_asc': query = query.order('hourly_rate',         { ascending: true,  nullsFirst: false }); break
+    case 'rating':    query = query.order('average_rating',      { ascending: false, nullsFirst: false }); break
+    case 'newest':    query = query.order('created_at',          { ascending: false }); break
+    default:          query = query.order('profile_completeness', { ascending: false }); break
   }
 
-  const from = ((query.page ?? 1) - 1) * PAGE_SIZE
-  const { data, count, error } = await q.range(from, from + PAGE_SIZE - 1)
-  if (error) throw error
-  return { instructors: data ?? [], total: count ?? 0 }
+  query = query.range(params.offset || 0, (params.offset || 0) + (params.limit || 20) - 1)
+
+  return query
 }
 
 export async function getInstructorBySlug(slug: string) {
-  const { data, error } = await supabaseServer
-    .from('instructors').select('*').eq('slug', slug).single()
-  if (error) return null
+  const { data } = await supabaseServer
+    .from('instructors')
+    .select('*')
+    .eq('slug', slug)
+    .single()
+
   return data
 }
 
 export async function getAllSlugs() {
   const { data } = await supabaseServer
-    .from('instructors').select('slug, suburb')
-  return data ?? []
+    .from('instructors')
+    .select('slug, suburb')
+    .not('slug', 'is', null)
+
+  return (data || []).map(i => ({
+    slug:   i.slug as string,
+    suburb: i.suburb.toLowerCase().replace(/\s+/g, '-'),
+  }))
 }

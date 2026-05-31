@@ -1,28 +1,43 @@
 import { notFound } from 'next/navigation'
-import { MapPin, Star, CheckCircle, Brain, Globe, Clock, Car, Share2, Flag } from 'lucide-react'
+import { MapPin, Star, CheckCircle, Brain, Globe, Clock, Car, Flag } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { Header } from '@/components/layout/header'
 import { BottomNav } from '@/components/layout/bottom-nav'
 import { ReviewForm } from '@/components/instructor/review-form'
-import { getInstructorBySlug } from '@/lib/repos/instructors.repo'
-import { supabaseServer } from '@/lib/clients/supabase-server'
 import { ShareButton } from '@/components/instructor/share-button'
+import { InstructorJsonLd, BreadcrumbJsonLd } from '@/components/seo/json-ld'
+import { getInstructorBySlug, getAllSlugs } from '@/lib/repos/instructors.repo'
+import { supabaseServer } from '@/lib/clients/supabase-server'
 
 export const revalidate = 3600
 
 interface Props {
-  params: { suburb: string; slug: string }
+  params: Promise<{ suburb: string; slug: string }>
+}
+
+export async function generateStaticParams() {
+  const slugs = await getAllSlugs()
+  return slugs.map(({ slug, suburb }) => ({ slug, suburb }))
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const instructor = await getInstructorBySlug(params.slug)
+  const { slug, suburb } = await params
+  const instructor = await getInstructorBySlug(slug)
   if (!instructor) return {}
   const name = `${instructor.first_name} ${instructor.last_name[0]}.`
   return {
-    title: `${name} — Driving Instructor in ${instructor.suburb} | LCarDrive`,
-    description: instructor.bio?.slice(0, 150) || `${name} is a driving instructor in ${instructor.suburb}.`,
+    title:       `${name} — Driving Instructor in ${instructor.suburb} | LCarDrive`,
+    description: instructor.bio?.slice(0, 155) || `${name} is a driving instructor in ${instructor.suburb}${instructor.hourly_rate ? ` charging $${instructor.hourly_rate}/hr` : ''}.`,
+    openGraph: {
+      title:       `${name} — Driving Instructor in ${instructor.suburb}`,
+      description: instructor.bio?.slice(0, 155) || '',
+      images:      instructor.profile_photo_url ? [{ url: instructor.profile_photo_url }] : [],
+    },
+    alternates: {
+      canonical: `https://lcardrive.com.au/instructors/${suburb}/${slug}`,
+    },
   }
 }
 
@@ -37,7 +52,7 @@ async function getApprovedReviews(instructorId: string) {
 }
 
 function ContactBar({ hourlyRate, phone, email }: { hourlyRate: any; phone: any; email: any }) {
-  const href = phone ? `tel:${phone}` : `mailto:${email}`
+  const href  = phone ? `tel:${phone}` : `mailto:${email}`
   const price = hourlyRate ? `$${hourlyRate}/hr` : 'Contact for pricing'
   return (
     <div className="fixed bottom-16 md:bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 z-40 shadow-lg">
@@ -46,14 +61,18 @@ function ContactBar({ hourlyRate, phone, email }: { hourlyRate: any; phone: any;
           <p className="text-xs text-gray-500">Starting from</p>
           <p className="font-bold text-lg text-gray-900">{price}</p>
         </div>
-        <a href={href} className="bg-[#1A3CFF] text-white font-semibold px-8 py-3 rounded-xl hover:bg-blue-700 transition-colors">Contact Instructor</a>
+        <a href={href} className="bg-[#1A3CFF] text-white font-semibold px-8 py-3 rounded-xl hover:bg-blue-700 transition-colors">
+          Contact Instructor
+        </a>
       </div>
     </div>
   )
 }
 
 export default async function ProfilePage({ params }: Props) {
-  const instructor = await getInstructorBySlug(params.slug)
+  const { suburb: suburbParam, slug } = await params
+
+  const instructor = await getInstructorBySlug(slug)
   if (!instructor) notFound()
 
   const reviews  = await getApprovedReviews(instructor.id)
@@ -72,6 +91,27 @@ export default async function ProfilePage({ params }: Props) {
     <div className="min-h-screen bg-[#F0F2FF]">
       <Header />
 
+      <InstructorJsonLd
+        name={name}
+        suburb={instructor.suburb}
+        state={instructor.state || 'VIC'}
+        postcode={instructor.postcode || ''}
+        phone={instructor.is_verified ? instructor.phone : null}
+        email={instructor.is_verified ? instructor.email : null}
+        bio={instructor.bio}
+        photo={instructor.profile_photo_url}
+        hourlyRate={instructor.hourly_rate}
+        rating={instructor.average_rating}
+        reviewCount={instructor.review_count}
+        slug={slug}
+      />
+      <BreadcrumbJsonLd items={[
+        { name: 'Home',            url: 'https://lcardrive.com.au' },
+        { name: 'Search',          url: 'https://lcardrive.com.au/search' },
+        { name: instructor.suburb, url: `https://lcardrive.com.au/instructors-in/${suburbParam}` },
+        { name: name,              url: `https://lcardrive.com.au/instructors/${suburbParam}/${slug}` },
+      ]} />
+
       <main className="max-w-3xl mx-auto pb-32">
 
         {/* Hero */}
@@ -82,7 +122,7 @@ export default async function ProfilePage({ params }: Props) {
             <div className="w-full h-full bg-gradient-to-br from-[#1A3CFF] to-blue-800" />
           )}
 
-         <ShareButton url={`/instructors/${params.suburb}/${params.slug}`} name={name} />
+          <ShareButton url={`/instructors/${suburbParam}/${slug}`} name={name} />
 
           <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent">
             <div className="flex items-end gap-3">
@@ -288,12 +328,10 @@ export default async function ProfilePage({ params }: Props) {
         </div>
       </main>
 
-      {/* Contact bar — verified instructors */}
       {instructor.is_verified && (instructor.phone || instructor.email) && (
         <ContactBar hourlyRate={instructor.hourly_rate} phone={instructor.phone} email={instructor.email} />
       )}
 
-      {/* Claim bar — unclaimed instructors */}
       {!instructor.is_verified && (
         <div className="fixed bottom-16 md:bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 z-40">
           <div className="max-w-3xl mx-auto">
