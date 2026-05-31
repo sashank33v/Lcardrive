@@ -1,72 +1,115 @@
 'use client'
+import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Menu, Search, Home, User } from 'lucide-react'
-import { UserButton, useAuth } from '@clerk/nextjs'
+import { Menu, X, Search, Sparkles } from 'lucide-react'
+import { UserButton, useUser } from '@clerk/nextjs'
 
-export function Header({ title = 'LCarDrive' }: { title?: string }) {
-  const { isSignedIn } = useAuth()
-  const path = usePathname()
+const NAV = [
+  { href: '/',                   label: 'Home'     },
+  { href: '/search',             label: 'Find'     },
+  { href: '/find-my-instructor', label: 'AI Match' },
+  { href: '/portal',             label: 'Portal'   },
+]
 
-  const navLinks = [
-    { href: '/',       label: 'Home'   },
-    { href: '/search', label: 'Find'   },
-    { href: '/portal', label: 'Portal' },
-  ]
+export function Header() {
+  const pathname       = usePathname()
+  const [open, setOpen] = useState(false)
+  const { isSignedIn } = useUser()
 
   return (
-    <header className="sticky top-0 z-40 bg-[#F0F2FF] border-b border-transparent">
-      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-
-        {/* Mobile: hamburger */}
-        <button className="md:hidden p-1">
-          <Menu size={22} className="text-gray-700" />
-        </button>
+    <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
+      <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
 
         {/* Logo */}
-        <Link href="/" className="text-lg font-bold text-[#1A3CFF] tracking-tight">
+        <Link href="/" className="font-bold text-[#1A3CFF] text-lg flex-shrink-0">
           LCarDrive
         </Link>
 
-        {/* Desktop: nav links */}
-        <nav className="hidden md:flex items-center gap-8">
-          {navLinks.map(({ href, label }) => {
-            const active = path === href || (href !== '/' && path.startsWith(href))
-            return (
-              <Link
-                key={href}
-                href={href}
-                className={`text-sm font-medium transition-colors ${
-                  active ? 'text-[#1A3CFF]' : 'text-gray-600 hover:text-[#1A3CFF]'
-                }`}
-              >
-                {label}
-              </Link>
-            )
-          })}
+        {/* Desktop nav */}
+        <nav className="hidden md:flex items-center gap-1">
+          {NAV.map(({ href, label }) => (
+            <Link
+              key={href}
+              href={href}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                pathname === href
+                  ? 'text-[#1A3CFF] bg-blue-50'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              }`}
+            >
+              {label === 'AI Match' && <Sparkles size={12} className="inline mr-1 mb-0.5" />}
+              {label}
+            </Link>
+          ))}
         </nav>
 
-        {/* Right side */}
-        <div className="flex items-center gap-3">
-          {/* Desktop: search icon */}
-          <Link href="/search" className="hidden md:flex items-center gap-2 bg-white border border-gray-200 rounded-full px-4 py-2 text-sm text-gray-500 hover:border-[#1A3CFF] transition-colors">
-            <Search size={15} />
-            Search instructors...
+        {/* Desktop right */}
+        <div className="hidden md:flex items-center gap-3">
+          <Link
+            href="/search"
+            className="flex items-center gap-2 text-sm text-gray-500 border border-gray-200 rounded-xl px-3 py-1.5 hover:border-gray-300 transition-colors"
+          >
+            <Search size={14} />
+            <span>Search instructors...</span>
           </Link>
-
-          {/* Avatar */}
-          <div className="w-8 h-8 flex items-center justify-center">
-            {isSignedIn ? (
-              <UserButton afterSignOutUrl="/" />
-            ) : (
-              <Link href="/sign-in">
-                <div className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors" />
-              </Link>
-            )}
-          </div>
+          {isSignedIn ? (
+            <UserButton afterSignOutUrl="/" />
+          ) : (
+            <Link href="/sign-in">
+              <button className="text-sm font-semibold text-[#1A3CFF] hover:underline">
+                Sign in
+              </button>
+            </Link>
+          )}
         </div>
 
+        {/* Mobile right */}
+        <div className="flex md:hidden items-center gap-3">
+          <Link href="/search" className="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-50">
+            <Search size={18} className="text-gray-600" />
+          </Link>
+          {isSignedIn && <UserButton afterSignOutUrl="/" />}
+          <button
+            onClick={() => setOpen(!open)}
+            className="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-50"
+            aria-label="Toggle menu"
+          >
+            {open
+              ? <X size={18} className="text-gray-600" />
+              : <Menu size={18} className="text-gray-600" />
+            }
+          </button>
+        </div>
       </div>
+
+      {/* Mobile menu */}
+      {open && (
+        <div className="md:hidden bg-white border-t border-gray-100 px-4 py-3 space-y-1">
+          {NAV.map(({ href, label }) => (
+            <Link
+              key={href}
+              href={href}
+              onClick={() => setOpen(false)}
+              className={`flex items-center gap-2 px-3 py-3 rounded-xl text-sm font-medium transition-colors ${
+                pathname === href
+                  ? 'text-[#1A3CFF] bg-blue-50'
+                  : 'text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              {label === 'AI Match' && <Sparkles size={14} className="text-purple-500" />}
+              {label}
+            </Link>
+          ))}
+          {!isSignedIn && (
+            <Link href="/sign-in" onClick={() => setOpen(false)}>
+              <div className="mt-2 w-full bg-[#1A3CFF] text-white font-semibold py-3 rounded-xl text-sm text-center">
+                Sign in
+              </div>
+            </Link>
+          )}
+        </div>
+      )}
     </header>
   )
 }

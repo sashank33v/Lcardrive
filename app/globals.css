@@ -1,34 +1,126 @@
 @import "tailwindcss";
-@import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
-
+/* ── Design tokens ── */
 :root {
-  --background: #F0F2FF;
-  --card: #FFFFFF;
-  --card-foreground: #111827;
-  --primary: #1A3CFF;
-  --primary-foreground: #FFFFFF;
-  --muted: #F9FAFB;
-  --muted-foreground: #6B7280;
-  --border: #E5E7EB;
-  --ring: #1A3CFF;
-  --radius: 0.75rem;
-  --navy: #1A2444;
-  --verified: #10B981;
-  --nav-active: #FFF3CD;
-  --destructive: #EF4444;
+  --primary:    #1A3CFF;
+  --bg:         #F0F2FF;
+  --navy:       #1A2444;
 }
 
-* { box-sizing: border-box; }
+/* ── Mobile base resets ── */
+* {
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
 
 body {
-  background-color: #F0F2FF;
-  font-family: var(--font-geist-sans), sans-serif;
-  -webkit-font-smoothing: antialiased;
-  margin: 0;
-  padding: 0;
+  background-color: var(--bg);
+  overscroll-behavior-y: none;
 }
 
-/* Hide scrollbar but keep scroll */
-::-webkit-scrollbar { display: none; }
+/* ── Prevent iOS input zoom (font-size must be ≥16px) ── */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="number"],
+input[type="password"],
+textarea,
+select {
+  font-size: 16px !important;
+}
+
+/* ── Minimum tap target size (44px) ── */
+button,
+a,
+[role="button"] {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* ── Safe area for iOS notch / home indicator ── */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ── No horizontal overflow ── */
+body,
+#__next {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* ── Smooth scrolling on mobile ── */
+* {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Range input styling ── */
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: #E5E7EB;
+  outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--primary);
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--primary);
+  cursor: pointer;
+  border: 2px solid white;
+}
+
+/* ── Focus rings (accessibility) ── */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── Skeleton shimmer animation ── */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+.animate-pulse {
+  animation: shimmer 1.5s ease-in-out infinite;
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 25%,
+    #e0e0e0 50%,
+    #f0f0f0 75%
+  );
+  background-size: 200% 100%;
+}
+
+/* ── Line clamp utility ── */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ── Hide scrollbar but keep scroll ── */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
