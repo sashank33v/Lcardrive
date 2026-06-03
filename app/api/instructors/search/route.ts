@@ -11,7 +11,6 @@ export async function GET(req: NextRequest) {
   const anxietyFriendly = sp.get('anxietyFriendly') === '1'
   const international   = sp.get('international')   === '1'
 
-  // Don't filter by transmission when 'both' is selected — show all
   const transmissionFilter = (!transmission || transmission === 'both')
     ? undefined
     : transmission
@@ -19,27 +18,27 @@ export async function GET(req: NextRequest) {
   const result = await searchInstructors({
     suburb,
     transmission: transmissionFilter,
-    maxPrice,
-    anxietyFriendly,
-    international,
+    max_price:    maxPrice,
+    anxiety:      anxietyFriendly,
+    intl:         international,
   })
 
   let instructors: any[] = result.data || []
 
-  // Defensive client-side maxPrice filter in case DB query doesn't apply it
+  // Defensive client-side maxPrice filter
   if (maxPrice && maxPrice > 0) {
     instructors = instructors.filter(i =>
       i.hourly_rate == null || Number(i.hourly_rate) <= maxPrice
     )
   }
 
-  // Log search
+  // Log search (fire and forget)
   if (suburb) {
-    supabaseServer
-      .from('search_logs')
-      .insert({ suburb, results_count: instructors.length })
-      .then(() => {})
-      .catch(() => {})
+    try {
+      await supabaseServer
+        .from('search_logs')
+        .insert({ suburb, results_count: instructors.length })
+    } catch {}
   }
 
   return NextResponse.json({

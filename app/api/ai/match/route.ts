@@ -141,9 +141,10 @@ Return ONLY a raw JSON array (no markdown, no backticks) of the 3 best matching 
     if (enriched.length === 0) throw new Error('No instructors found after enrichment')
 
     // Log usage (fire and forget)
-    supabaseServer.from('ai_usage')
-      .insert({ feature: 'match', tokens_used: text.length })
-      .then(() => {}).catch(() => {})
+     try {
+         await supabaseServer.from('ai_usage')
+         .insert({ feature: 'match', tokens_used: text.length })
+     } catch {}
 
     return NextResponse.json({ instructors: enriched })
 

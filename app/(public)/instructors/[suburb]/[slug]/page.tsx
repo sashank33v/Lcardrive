@@ -344,7 +344,7 @@ export default async function ProfilePage({ params }: Props) {
                 {/* Leave a review */}
                 <div className="bg-white rounded-2xl p-6">
                   <h2 className="font-bold text-gray-900 mb-4 text-lg">Leave a Review</h2>
-                  <ReviewForm instructorId={instructor.id} />
+                  <ReviewForm instructorId={instructor.id} instructorName={`${instructor.first_name} ${instructor.last_name}`} />
                 </div>
 
               </div>
@@ -394,8 +394,8 @@ export default async function ProfilePage({ params }: Props) {
 
                     <div className="mt-4 flex items-center justify-between">
                       <ShareButton
-                        url={`${process.env.NEXT_PUBLIC_APP_URL}/instructors/${suburb}/${slug}`}
-                        title={`${instructor.first_name} ${instructor.last_name} — Driving Instructor in ${instructor.suburb}`}
+                          url={`${process.env.NEXT_PUBLIC_APP_URL}/instructors/${suburb}/${slug}`}
+                          name={`${instructor.first_name} ${instructor.last_name}`}
                       />
                       {!instructor.is_claimed && (
                         <Link href={`/claim/${instructor.id}`} className="text-xs text-gray-400 hover:text-gray-600">
