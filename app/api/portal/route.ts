@@ -1,65 +1,89 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { supabaseServer } from '@/lib/clients/supabase-server'
-import { sanitiseText, isValidPhone, isValidEmail, isValidHourlyRate } from '@/lib/validation'
 
 export async function GET() {
   const { userId } = await auth()
-  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!userId) return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
 
-  const { data } = await supabaseServer
+  const { data, error } = await supabaseServer
     .from('instructors')
     .select('*')
     .eq('clerk_user_id', userId)
-    .single()
+    .maybeSingle()
 
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ instructor: data || null })
 }
 
 export async function PATCH(req: NextRequest) {
   const { userId } = await auth()
-  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!userId) return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
 
-  const body = await req.json()
-
-  // Validate and sanitise fields
-  const errors: string[] = []
-
-  if (body.phone && !isValidPhone(body.phone)) {
-    errors.push('Invalid Australian phone number (e.g. 0412 345 678)')
-  }
-  if (body.email && !isValidEmail(body.email)) {
-    errors.push('Invalid email address')
-  }
-  if (body.hourly_rate && !isValidHourlyRate(Number(body.hourly_rate))) {
-    errors.push('Hourly rate must be between $30 and $300')
-  }
-
-  if (errors.length > 0) {
-    return NextResponse.json({ error: errors.join('. ') }, { status: 400 })
-  }
-
-  // Sanitise text fields
-  const sanitised: any = { ...body }
-  if (body.bio)          sanitised.bio          = sanitiseText(body.bio, 500)
-  if (body.first_name)   sanitised.first_name   = sanitiseText(body.first_name, 50)
-  if (body.last_name)    sanitised.last_name    = sanitiseText(body.last_name, 50)
-
-  // Strip fields that should never be updated via portal
-  delete sanitised.id
-  delete sanitised.clerk_user_id
-  delete sanitised.is_verified
-  delete sanitised.is_claimed
-  delete sanitised.created_at
-  delete sanitised.slug
-
-  const { data, error } = await supabaseServer
+  const { data: existing } = await supabaseServer
     .from('instructors')
-    .update(sanitised)
+    .select('id')
     .eq('clerk_user_id', userId)
-    .select()
-    .single()
+    .maybeSingle()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ instructor: data })
+  if (!existing) {
+    return NextResponse.json(
+      { error: 'No instructor profile found. Please claim a listing first.' },
+      { status: 404 }
+    )
+  }
+
+  let body: any
+  try { body = await req.json() }
+  catch { return NextResponse.json({ error: 'Invalid request body' }, { status: 400 }) }
+
+  const str  = (v: any, max = 200) => typeof v === 'string' ? v.trim().slice(0, max) : null
+  const num  = (v: any) => v !== undefined && v !== '' ? Number(v) : null
+  const bool = (v: any) => typeof v === 'boolean' ? v : Boolean(v)
+
+  const updates: Record<string, any> = {}
+
+  if (body.first_name            !== undefined) updates.first_name             = str(body.first_name, 50)
+  if (body.last_name             !== undefined) updates.last_name              = str(body.last_name, 50)
+  if (body.phone                 !== undefined) updates.phone                  = str(body.phone, 20)
+  if (body.email                 !== undefined) updates.email                  = str(body.email, 200)?.toLowerCase()
+  if (body.bio                   !== undefined) updates.bio                    = str(body.bio, 1000)
+  if (body.years_experience      !== undefined) updates.years_experience       = num(body.years_experience)
+  if (body.transmission          !== undefined) updates.transmission           = body.transmission
+  if (body.hourly_rate           !== undefined) updates.hourly_rate            = num(body.hourly_rate)
+  if (body.lesson_duration_mins  !== undefined) updates.lesson_duration_mins   = num(body.lesson_duration_mins)
+  if (body.vehicle_make          !== undefined) updates.vehicle_make           = str(body.vehicle_make, 50)
+  if (body.vehicle_model         !== undefined) updates.vehicle_model          = str(body.vehicle_model, 50)
+  if (body.vehicle_year          !== undefined) updates.vehicle_year           = num(body.vehicle_year)
+  if (body.dual_controls         !== undefined) updates.dual_controls          = bool(body.dual_controls)
+  if (body.specialises_anxiety   !== undefined) updates.specialises_anxiety    = bool(body.specialises_anxiety)
+  if (body.accepts_international !== undefined) updates.accepts_international  = bool(body.accepts_international)
+  if (body.languages             !== undefined) updates.languages              = body.languages
+  if (body.package_options       !== undefined) updates.package_options        = body.package_options
+  if (body.familiar_test_centres !== undefined) updates.familiar_test_centres  = body.familiar_test_centres
+  if (body.service_areas         !== undefined) updates.service_areas          = body.service_areas
+  if (body.availability_days     !== undefined) updates.availability_days      = body.availability_days
+  if (body.availability_slots    !== undefined) updates.availability_slots     = body.availability_slots
+
+  if (Object.keys(updates).length === 0) {
+    return NextResponse.json({ error: 'No fields to update' }, { status: 400 })
+  }
+
+  const { error: updateError } = await supabaseServer
+    .from('instructors')
+    .update(updates)
+    .eq('clerk_user_id', userId)
+
+  if (updateError) {
+    console.error('[Portal PATCH]', updateError)
+    return NextResponse.json({ error: updateError.message }, { status: 500 })
+  }
+
+  const { data: updated } = await supabaseServer
+    .from('instructors')
+    .select('*')
+    .eq('clerk_user_id', userId)
+    .maybeSingle()
+
+  return NextResponse.json({ instructor: updated })
 }

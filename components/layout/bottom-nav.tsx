@@ -2,44 +2,42 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Home, Search, Sparkles, User } from 'lucide-react'
+import { AdminButton } from './admin-button'
 
-const TABS = [
-  { href: '/',                   label: 'Home',    Icon: Home     },
-  { href: '/search',             label: 'Find',    Icon: Search   },
+const NAV = [
+  { href: '/',                   label: 'Home',     Icon: Home     },
+  { href: '/search',             label: 'Find',     Icon: Search   },
   { href: '/find-my-instructor', label: 'AI Match', Icon: Sparkles },
-  { href: '/portal',             label: 'Portal',  Icon: User     },
+  { href: '/portal',             label: 'Portal',   Icon: User     },
 ]
 
 export function BottomNav() {
   const pathname = usePathname()
+  if (pathname.startsWith('/admin')) return null
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40 safe-area-bottom">
-      <div className="flex">
-        {TABS.map(({ href, label, Icon }) => {
-          const active = pathname === href || (href !== '/' && pathname.startsWith(href))
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 z-40 safe-area-bottom"
+      aria-label="Mobile navigation"
+    >
+      <div className="flex items-center justify-around py-2 px-2">
+        {NAV.map(({ href, label, Icon }) => {
+          const active = pathname === href
           return (
-            <Link
-              key={href}
-              href={href}
-              className={`flex-1 flex flex-col items-center justify-center py-2.5 min-h-[56px] transition-colors ${
-                active ? 'text-[#1A3CFF]' : 'text-gray-400'
+            <Link key={href} href={href}
+              className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl transition-colors min-w-[52px] ${
+                active ? 'text-[#1A3CFF]' : 'text-gray-400 hover:text-gray-600'
               }`}
+              aria-label={label}
+              aria-current={active ? 'page' : undefined}
             >
-              <Icon
-                size={22}
-                className={active ? 'text-[#1A3CFF]' : 'text-gray-400'}
-                strokeWidth={active ? 2.5 : 1.8}
-              />
-              <span className={`text-[10px] mt-0.5 font-medium ${active ? 'text-[#1A3CFF]' : 'text-gray-400'}`}>
-                {label}
-              </span>
-              {active && (
-                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-[#1A3CFF] rounded-full" />
-              )}
+              <Icon size={20} aria-hidden="true" />
+              <span className="text-[10px] font-medium">{label}</span>
             </Link>
           )
         })}
+
+        {/* Admin tab — only rendered for admin users (self-hiding) */}
+        <AdminButton variant="bottom-nav" />
       </div>
     </nav>
   )

@@ -1,278 +1,244 @@
-'use client'
-import { Suspense, useState, useEffect, useCallback } from 'react'
-import { useSearchParams } from 'next/navigation'
-import { SlidersHorizontal, X } from 'lucide-react'
+import { Suspense } from 'react'
+import type { Metadata } from 'next'
 import Link from 'next/link'
+import { MapPin, SlidersHorizontal, Sparkles, Search as SearchIcon, ArrowRight } from 'lucide-react'
 import { Header } from '@/components/layout/header'
 import { BottomNav } from '@/components/layout/bottom-nav'
+import { Footer } from '@/components/layout/footer'
 import { InstructorCard } from '@/components/instructor/instructor-card'
-import { SuburbAutocomplete } from '@/components/search/suburb-autocomplete'
+import { SearchBarClient } from '@/components/search/search-bar-client'
 import { CardSkeleton } from '@/components/ui/skeletons'
 
-function SearchContent() {
-  const searchParams = useSearchParams()
+export const metadata: Metadata = {
+  title: 'Find a Driving Instructor | LCarDrive',
+  description: 'Search verified driving instructors by suburb across Melbourne.',
+}
 
-  const [instructors, setInstructors] = useState<any[]>([])
-  const [total,       setTotal]       = useState(0)
-  const [loading,     setLoading]     = useState(false)
-  const [showFilters, setShowFilters] = useState(false)
+const NEARBY = ['Footscray', 'Sunshine', 'St Kilda', 'Werribee', 'Dandenong', 'Hoppers Crossing']
 
-  const [suburb,       setSuburb]       = useState(searchParams.get('suburb')       || '')
-  const [transmission, setTransmission] = useState(searchParams.get('transmission') || '')
-  const [maxPrice,     setMaxPrice]     = useState(searchParams.get('max_price')    || '')
-  const [anxiety,      setAnxiety]      = useState(searchParams.get('anxiety')      === 'true')
-  const [intl,         setIntl]         = useState(searchParams.get('intl')         === 'true')
-  const [sort,         setSort]         = useState(searchParams.get('sort')         || 'relevance')
+async function fetchInstructors(params: {
+  suburb?: string; transmission?: string; maxPrice?: number;
+  anxietyFriendly?: boolean; international?: boolean
+}) {
+  const url = new URL(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/instructors/search`)
+  if (params.suburb)          url.searchParams.set('suburb',          params.suburb)
+  if (params.transmission)    url.searchParams.set('transmission',    params.transmission)
+  if (params.maxPrice)        url.searchParams.set('maxPrice',        String(params.maxPrice))
+  if (params.anxietyFriendly) url.searchParams.set('anxietyFriendly','1')
+  if (params.international)   url.searchParams.set('international',   '1')
+  try {
+    const res  = await fetch(url.toString(), { cache: 'no-store' })
+    const data = await res.json()
+    return { instructors: data.instructors || data.data || [], total: data.total || 0 }
+  } catch { return { instructors: [], total: 0 } }
+}
 
-  const fetchInstructors = useCallback(async () => {
-    setLoading(true)
-    try {
-      const params = new URLSearchParams()
-      if (suburb)       params.set('suburb',       suburb)
-      if (transmission) params.set('transmission', transmission)
-      if (maxPrice)     params.set('max_price',    maxPrice)
-      if (anxiety)      params.set('anxiety',      'true')
-      if (intl)         params.set('intl',         'true')
-      params.set('sort', sort)
+interface PageProps {
+  searchParams: Promise<{
+    suburb?: string; transmission?: string; maxPrice?: string;
+    anxietyFriendly?: string; international?: string
+  }>
+}
 
-      const res  = await fetch(`/api/instructors/search?${params}`)
-      const data = await res.json()
-      const list = data.instructors || data.data || []
-      setInstructors(list)
-      setTotal(data.total || list.length || 0)
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setLoading(false)
-    }
-  }, [suburb, transmission, maxPrice, anxiety, intl, sort])
+async function Results({ searchParams }: PageProps) {
+  const sp = await searchParams
+  const { instructors, total } = await fetchInstructors({
+    suburb:          sp.suburb,
+    transmission:    sp.transmission,
+    maxPrice:        sp.maxPrice ? Number(sp.maxPrice) : undefined,
+    anxietyFriendly: sp.anxietyFriendly === '1',
+    international:   sp.international   === '1',
+  })
 
-  useEffect(() => { fetchInstructors() }, [fetchInstructors])
-
-  const clearAll = () => {
-    setSuburb('')
-    setTransmission('')
-    setMaxPrice('')
-    setAnxiety(false)
-    setIntl(false)
+  if (!sp.suburb && instructors.length === 0) {
+    return (
+      <div className="text-center py-20">
+        <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <SearchIcon size={28} className="text-[#1A3CFF]" />
+        </div>
+        <h2 className="text-xl font-bold text-gray-900 mb-2">Search for instructors</h2>
+        <p className="text-gray-500 text-sm mb-8">Enter a suburb or postcode above to get started</p>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Popular suburbs</p>
+        <div className="flex flex-wrap gap-2 justify-center">
+          {NEARBY.map(s => (
+            <Link key={s} href={`/search?suburb=${encodeURIComponent(s)}`}
+              className="text-sm text-[#1A3CFF] bg-blue-50 border border-blue-100 px-3 py-1.5 rounded-full hover:bg-blue-100 transition-colors"
+            >
+              {s}
+            </Link>
+          ))}
+        </div>
+      </div>
+    )
   }
 
-  const activeFilters = [
-    transmission && { label: transmission.charAt(0).toUpperCase() + transmission.slice(1), clear: () => setTransmission('') },
-    maxPrice     && { label: `Under $${maxPrice}/hr`, clear: () => setMaxPrice('')   },
-    anxiety      && { label: 'Anxiety-friendly',      clear: () => setAnxiety(false) },
-    intl         && { label: 'Intl. licence',          clear: () => setIntl(false)   },
-  ].filter(Boolean) as { label: string; clear: () => void }[]
+  if (instructors.length === 0) {
+    return (
+      <div className="py-12">
+        <div className="bg-white rounded-2xl p-8 text-center mb-6">
+          <div className="w-14 h-14 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <MapPin size={24} className="text-amber-500" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">No instructors found in {sp.suburb}</h2>
+          <p className="text-gray-500 text-sm mb-6">Try a nearby suburb or broaden your filters.</p>
+          <div className="flex flex-wrap gap-2 justify-center">
+            {NEARBY.map(s => (
+              <Link key={s} href={`/search?suburb=${encodeURIComponent(s)}`}
+                className="text-sm text-[#1A3CFF] bg-blue-50 px-3 py-1.5 rounded-full hover:bg-blue-100 transition-colors border border-blue-100"
+              >
+                Try {s}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="min-h-screen bg-[#F0F2FF]">
-      <Header />
-
-      {/* Sticky search bar */}
-      <div className="sticky top-[57px] z-30 bg-[#F0F2FF] px-4 py-3 border-b border-gray-100">
-        <div className="max-w-6xl mx-auto flex gap-2">
-
-          <div className="flex-1">
-            <SuburbAutocomplete
-              value={suburb}
-              onChange={setSuburb}
-              onSelect={() => setTimeout(fetchInstructors, 100)}
-              placeholder="Search suburb or postcode..."
-            />
-          </div>
-
-          <button
-            onClick={() => setShowFilters(true)}
-            className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl border text-sm font-medium transition-colors flex-shrink-0 ${
-              activeFilters.length > 0
-                ? 'bg-[#1A3CFF] text-white border-[#1A3CFF]'
-                : 'bg-white text-gray-700 border-gray-200'
-            }`}
-          >
-            <SlidersHorizontal size={15} />
-            <span className="hidden sm:inline">Filters</span>
-            {activeFilters.length > 0 && (
-              <span className="bg-white text-[#1A3CFF] text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
-                {activeFilters.length}
-              </span>
-            )}
-          </button>
+    <div>
+      {/* AI banner */}
+      <div className="bg-gradient-to-r from-purple-600 to-[#1A3CFF] rounded-2xl p-4 mb-6 flex items-center justify-between gap-4">
+        <div>
+          <p className="text-white font-bold text-sm flex items-center gap-2">
+            <Sparkles size={14} /> Smart Matching
+          </p>
+          <p className="text-white/80 text-xs mt-0.5">
+            Not sure who to pick? Our AI finds your top 3.
+          </p>
         </div>
-
-        {/* Active filter chips */}
-        {activeFilters.length > 0 && (
-          <div className="max-w-6xl mx-auto flex gap-2 mt-2 flex-wrap">
-            {activeFilters.map(f => (
-              <button
-                key={f.label}
-                onClick={f.clear}
-                className="flex items-center gap-1 px-3 py-1 bg-[#1A3CFF] text-white text-xs rounded-full font-medium"
-              >
-                {f.label} <X size={11} />
-              </button>
-            ))}
-            <button
-              onClick={clearAll}
-              className="text-xs text-gray-500 hover:text-gray-700 underline"
-            >
-              Clear all
-            </button>
-          </div>
-        )}
+        <Link href="/find-my-instructor" className="flex-shrink-0">
+          <button className="bg-white text-purple-700 text-xs font-bold px-4 py-2 rounded-xl hover:bg-purple-50 transition-colors flex items-center gap-1">
+            Help me choose <ArrowRight size={12} />
+          </button>
+        </Link>
       </div>
 
-      {/* Filter bottom sheet */}
-      {showFilters && (
-        <div className="fixed inset-0 z-50 bg-black/40" onClick={() => setShowFilters(false)}>
-          <div
-            className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 max-h-[80vh] overflow-y-auto"
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="font-bold text-lg text-gray-900">Filters</h3>
-              <button onClick={() => setShowFilters(false)}>
-                <X size={20} className="text-gray-500" />
-              </button>
-            </div>
+      <p className="text-sm text-gray-500 mb-4">
+        <strong className="text-gray-900">{total}</strong> instructor{total !== 1 ? 's' : ''}
+        {sp.suburb ? ` near ${sp.suburb}` : ''}
+      </p>
 
-            {/* Transmission */}
-            <div className="mb-5">
-              <p className="text-sm font-semibold text-gray-700 mb-2">Transmission</p>
-              <div className="flex gap-2">
-                {['auto', 'manual', 'both'].map(t => (
-                  <button
-                    key={t}
-                    onClick={() => setTransmission(transmission === t ? '' : t)}
-                    className={`flex-1 py-3 rounded-xl text-sm font-medium border-2 capitalize transition-colors ${
-                      transmission === t
-                        ? 'bg-[#1A3CFF] text-white border-[#1A3CFF]'
-                        : 'bg-white text-gray-700 border-gray-200'
-                    }`}
-                  >
-                    {t}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Max price */}
-            <div className="mb-5">
-              <p className="text-sm font-semibold text-gray-700 mb-2">
-                Max price: {maxPrice ? `$${maxPrice}/hr` : 'Any'}
-              </p>
-              <input
-                type="range" min={40} max={150} step={5}
-                value={maxPrice || 150}
-                onChange={e => setMaxPrice(e.target.value === '150' ? '' : e.target.value)}
-                className="w-full accent-[#1A3CFF]"
-              />
-              <div className="flex justify-between text-xs text-gray-400 mt-1">
-                <span>$40</span><span>$150+</span>
-              </div>
-            </div>
-
-            {/* Toggles */}
-            <div className="space-y-3 mb-6">
-              {[
-                { label: 'Anxiety-friendly instructor',      val: anxiety, set: setAnxiety },
-                { label: 'International licence conversion', val: intl,    set: setIntl    },
-              ].map(({ label, val, set }) => (
-                <div key={label} className="flex items-center justify-between">
-                  <span className="text-sm text-gray-700">{label}</span>
-                  <button
-                    onClick={() => set(!val)}
-                    className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${val ? 'bg-[#1A3CFF]' : 'bg-gray-200'}`}
-                  >
-                    <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${val ? 'left-5' : 'left-0.5'}`} />
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            <button
-              onClick={() => setShowFilters(false)}
-              className="w-full bg-[#1A3CFF] text-white font-semibold py-3.5 rounded-xl"
-            >
-              Show {total} Result{total !== 1 ? 's' : ''}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Main content */}
-      <main className="max-w-6xl mx-auto px-4 py-4 pb-28">
-
-        {/* Sort + count */}
-        <div className="flex items-center justify-between mb-4">
-          <p className="text-sm text-gray-600">
-            {loading
-              ? 'Searching...'
-              : `${total} instructor${total !== 1 ? 's' : ''} found${suburb ? ` near ${suburb}` : ''}`
-            }
-          </p>
-          <select
-            value={sort}
-            onChange={e => setSort(e.target.value)}
-            className="text-sm border border-gray-200 rounded-xl px-3 py-2 bg-white text-gray-700 outline-none cursor-pointer"
-          >
-            <option value="relevance">Relevance</option>
-            <option value="price_asc">Price: Low–High</option>
-            <option value="rating">Top Rated</option>
-            <option value="newest">Newest</option>
-          </select>
-        </div>
-
-        {/* Results grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
-          {loading
-            ? Array(6).fill(0).map((_, i) => <CardSkeleton key={i} />)
-            : instructors.map(i => <InstructorCard key={i.id} {...i} />)
-          }
-        </div>
-
-        {/* Empty state */}
-        {!loading && instructors.length === 0 && (
-          <div className="text-center py-16">
-            <p className="text-5xl mb-4">🔍</p>
-            <h3 className="font-bold text-gray-900 text-lg mb-2">No instructors found</h3>
-            <p className="text-gray-500 text-sm mb-6">
-              Try a different suburb or remove some filters
-            </p>
-            <button
-              onClick={clearAll}
-              className="bg-[#1A3CFF] text-white px-6 py-3 rounded-xl font-medium"
-            >
-              Clear all filters
-            </button>
-          </div>
-        )}
-
-        {/* AI Match banner */}
-        {!loading && (
-          <div className="bg-gradient-to-r from-blue-700 to-[#1A3CFF] rounded-2xl p-6 text-center">
-            <p className="text-3xl mb-2">🤖</p>
-            <h3 className="text-white font-bold text-lg mb-1">Not sure who to pick?</h3>
-            <p className="text-blue-200 text-sm mb-4">
-              Let our AI match you with the perfect instructor for your learning style.
-            </p>
-            <Link href="/find-my-instructor">
-              <button className="bg-white text-[#1A3CFF] font-semibold px-6 py-2.5 rounded-xl text-sm hover:bg-blue-50 transition-colors">
-                ✦ Help Me Choose
-              </button>
-            </Link>
-          </div>
-        )}
-      </main>
-
-      <BottomNav />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {instructors.map((i: any) => <InstructorCard key={i.id} {...i} />)}
+      </div>
     </div>
   )
 }
 
-export default function SearchPage() {
+export default async function SearchPage({ searchParams }: PageProps) {
+  const sp = await searchParams
+
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#F0F2FF]" />}>
-      <SearchContent />
-    </Suspense>
+    <div className="min-h-screen bg-[#F0F2FF] flex flex-col">
+      <Header />
+
+      {/* Search bar — uses client component to avoid RSC handler error */}
+      <div className="bg-white border-b border-gray-100 py-4">
+        <div className="max-w-6xl mx-auto px-4">
+          <SearchBarClient defaultSuburb={sp.suburb || ''} />
+
+          {/* Active filter chips */}
+          <div className="flex gap-2 flex-wrap mt-3">
+            {sp.transmission && (
+              <span className="text-xs bg-blue-100 text-blue-700 font-semibold px-3 py-1 rounded-full capitalize">
+                {sp.transmission}
+              </span>
+            )}
+            {sp.anxietyFriendly === '1' && (
+              <span className="text-xs bg-purple-100 text-purple-700 font-semibold px-3 py-1 rounded-full">
+                Anxiety-friendly
+              </span>
+            )}
+            {sp.maxPrice && (
+              <span className="text-xs bg-green-100 text-green-700 font-semibold px-3 py-1 rounded-full">
+                Under ${sp.maxPrice}/hr
+              </span>
+            )}
+            {(sp.transmission || sp.anxietyFriendly || sp.maxPrice) && (
+              <Link href={sp.suburb ? `/search?suburb=${sp.suburb}` : '/search'}
+                className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1"
+              >
+                Clear filters
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="flex-1 max-w-6xl mx-auto px-4 py-6 w-full pb-24">
+        <div className="flex gap-6">
+
+          {/* Desktop sidebar filters */}
+          <aside className="hidden lg:block w-56 flex-shrink-0">
+            <div className="bg-white rounded-2xl p-4 sticky top-20">
+              <div className="flex items-center gap-2 mb-4">
+                <SlidersHorizontal size={15} className="text-gray-500" />
+                <p className="text-sm font-bold text-gray-900">Filters</p>
+              </div>
+              <form method="GET" action="/search" className="space-y-5">
+                {sp.suburb && <input type="hidden" name="suburb" value={sp.suburb} />}
+
+                <div>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Transmission</p>
+                  {['auto','manual','both'].map(t => (
+                    <label key={t} className="flex items-center gap-2.5 py-1.5 cursor-pointer">
+                      <input type="radio" name="transmission" value={t}
+                        defaultChecked={sp.transmission === t} className="accent-[#1A3CFF]" />
+                      <span className="text-sm text-gray-700 capitalize">{t}</span>
+                    </label>
+                  ))}
+                </div>
+
+                <div>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Max Price</p>
+                  {[60,80,100,120].map(p => (
+                    <label key={p} className="flex items-center gap-2.5 py-1.5 cursor-pointer">
+                      <input type="radio" name="maxPrice" value={p}
+                        defaultChecked={sp.maxPrice === String(p)} className="accent-[#1A3CFF]" />
+                      <span className="text-sm text-gray-700">Up to ${p}/hr</span>
+                    </label>
+                  ))}
+                </div>
+
+                <div>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Preferences</p>
+                  <label className="flex items-center gap-2.5 py-1.5 cursor-pointer">
+                    <input type="checkbox" name="anxietyFriendly" value="1"
+                      defaultChecked={sp.anxietyFriendly === '1'} className="accent-[#1A3CFF]" />
+                    <span className="text-sm text-gray-700">Anxiety-friendly</span>
+                  </label>
+                  <label className="flex items-center gap-2.5 py-1.5 cursor-pointer">
+                    <input type="checkbox" name="international" value="1"
+                      defaultChecked={sp.international === '1'} className="accent-[#1A3CFF]" />
+                    <span className="text-sm text-gray-700">International learners</span>
+                  </label>
+                </div>
+
+                <button type="submit"
+                  className="w-full bg-[#1A3CFF] text-white text-sm font-semibold py-2.5 rounded-xl hover:bg-blue-700 transition-colors"
+                >
+                  Apply Filters
+                </button>
+              </form>
+            </div>
+          </aside>
+
+          {/* Results */}
+          <main className="flex-1 min-w-0">
+            <Suspense fallback={
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {[1,2,3,4].map(i => <CardSkeleton key={i} />)}
+              </div>
+            }>
+              <Results searchParams={searchParams} />
+            </Suspense>
+          </main>
+        </div>
+      </div>
+
+      <Footer />
+      <BottomNav />
+    </div>
   )
 }

@@ -1,7 +1,14 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { auth } from '@clerk/nextjs/server'
+import type { Metadata } from 'next'
 import { LayoutDashboard, Users, Star, FileText, Upload, Flag } from 'lucide-react'
+import { Header } from '@/components/layout/header'
+
+export const metadata: Metadata = {
+  title:  'Admin Panel | LCarDrive',
+  robots: { index: false },
+}
 
 const NAV = [
   { href: '/admin',          label: 'Dashboard', Icon: LayoutDashboard },
@@ -19,12 +26,17 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="min-h-screen bg-[#F0F2FF]">
-      <div className="max-w-6xl mx-auto px-4 py-6">
+      <Header />
+
+      <div className="max-w-6xl mx-auto px-4 py-6 pb-12">
         <div className="flex gap-6">
 
+          {/* Sidebar */}
           <aside className="hidden md:block w-52 flex-shrink-0">
-            <div className="bg-white rounded-2xl p-3 sticky top-6">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide px-3 py-2 mb-1">Admin Panel</p>
+            <div className="bg-white rounded-2xl p-3 sticky top-20">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide px-3 py-2 mb-1">
+                Admin Panel
+              </p>
               <nav className="space-y-0.5">
                 {NAV.map(({ href, label, Icon }) => (
                   <Link
@@ -40,6 +52,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             </div>
           </aside>
 
+          {/* Mobile nav */}
           <div className="md:hidden w-full mb-4">
             <div className="bg-white rounded-2xl p-2 flex gap-1 overflow-x-auto">
               {NAV.map(({ href, label, Icon }) => (

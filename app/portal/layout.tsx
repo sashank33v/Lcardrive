@@ -1,17 +1,25 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { auth } from '@clerk/nextjs/server'
+import type { Metadata } from 'next'
 import {
   LayoutDashboard, User, DollarSign,
   MapPin, Calendar, ChevronRight
 } from 'lucide-react'
+import { Header } from '@/components/layout/header'
+import { BottomNav } from '@/components/layout/bottom-nav'
+
+export const metadata: Metadata = {
+  title:  'Instructor Portal | LCarDrive',
+  robots: { index: false },
+}
 
 const NAV = [
-  { href: '/portal',              label: 'Dashboard',    Icon: LayoutDashboard },
-  { href: '/portal/profile',      label: 'My Profile',   Icon: User            },
-  { href: '/portal/pricing',      label: 'Pricing',      Icon: DollarSign      },
-  { href: '/portal/availability', label: 'Availability', Icon: Calendar        },
-  { href: '/portal/service-areas',label: 'Service Areas',Icon: MapPin          },
+  { href: '/portal',               label: 'Dashboard',    Icon: LayoutDashboard },
+  { href: '/portal/profile',       label: 'My Profile',   Icon: User            },
+  { href: '/portal/pricing',       label: 'Pricing',      Icon: DollarSign      },
+  { href: '/portal/availability',  label: 'Availability', Icon: Calendar        },
+  { href: '/portal/service-areas', label: 'Service Areas',Icon: MapPin          },
 ]
 
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
@@ -20,7 +28,9 @@ export default async function PortalLayout({ children }: { children: React.React
 
   return (
     <div className="min-h-screen bg-[#F0F2FF]">
-      <div className="max-w-5xl mx-auto px-4 py-6 pb-24 md:pb-8">
+      <Header />
+
+      <div className="max-w-5xl mx-auto px-4 py-6 pb-24 md:pb-12">
 
         {/* Mobile horizontal nav */}
         <div className="md:hidden mb-4 -mx-4 px-4">
@@ -64,10 +74,13 @@ export default async function PortalLayout({ children }: { children: React.React
             </div>
           </aside>
 
-          {/* Main */}
+          {/* Main content */}
           <main className="flex-1 min-w-0">{children}</main>
+
         </div>
       </div>
+
+      <BottomNav />
     </div>
   )
 }

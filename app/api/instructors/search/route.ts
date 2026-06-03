@@ -1,45 +1,49 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { searchInstructors } from '@/lib/repos/instructors.repo'
 import { supabaseServer } from '@/lib/clients/supabase-server'
 
 export async function GET(req: NextRequest) {
-  try {
-    const { searchParams } = new URL(req.url)
+  const sp              = req.nextUrl.searchParams
+  const suburb          = sp.get('suburb')          || undefined
+  const transmission    = sp.get('transmission')    || undefined
+  const maxPriceStr     = sp.get('maxPrice')
+  const maxPrice        = maxPriceStr ? Number(maxPriceStr) : undefined
+  const anxietyFriendly = sp.get('anxietyFriendly') === '1'
+  const international   = sp.get('international')   === '1'
 
-    const suburb       = searchParams.get('suburb')       || ''
-    const transmission = searchParams.get('transmission') || ''
-    const max_price    = searchParams.get('max_price')    ? Number(searchParams.get('max_price')) : null
-    const anxiety      = searchParams.get('anxiety')      === 'true'
-    const intl         = searchParams.get('intl')         === 'true'
-    const sort         = searchParams.get('sort')         || 'relevance'
+  // Don't filter by transmission when 'both' is selected — show all
+  const transmissionFilter = (!transmission || transmission === 'both')
+    ? undefined
+    : transmission
 
-    let query = supabaseServer
-      .from('instructors')
-      .select('id, slug, first_name, last_name, suburb, state, hourly_rate, average_rating, review_count, transmission, is_verified, is_claimed, profile_photo_url, specialises_anxiety, accepts_international, years_experience, profile_completeness', { count: 'exact' })
+  const result = await searchInstructors({
+    suburb,
+    transmission: transmissionFilter,
+    maxPrice,
+    anxietyFriendly,
+    international,
+  })
 
-    if (suburb)       query = query.ilike('suburb', `%${suburb}%`)
-    if (transmission) query = query.or(`transmission.eq.${transmission},transmission.eq.both`)
-    if (max_price)    query = query.lte('hourly_rate', max_price)
-    if (anxiety)      query = query.eq('specialises_anxiety', true)
-    if (intl)         query = query.eq('accepts_international', true)
+  let instructors: any[] = result.data || []
 
-    switch (sort) {
-      case 'price_asc': query = query.order('hourly_rate',          { ascending: true,  nullsFirst: false }); break
-      case 'rating':    query = query.order('average_rating',       { ascending: false, nullsFirst: false }); break
-      case 'newest':    query = query.order('created_at',           { ascending: false }); break
-      default:          query = query.order('profile_completeness',  { ascending: false }); break
-    }
-
-    query = query.limit(50)
-
-    const { data, count, error } = await query
-
-    if (error) {
-      return NextResponse.json({ instructors: [], total: 0, error: error.message }, { status: 500 })
-    }
-
-    return NextResponse.json({ instructors: data || [], total: count || 0 })
-
-  } catch (err: any) {
-    return NextResponse.json({ instructors: [], total: 0, error: err.message }, { status: 500 })
+  // Defensive client-side maxPrice filter in case DB query doesn't apply it
+  if (maxPrice && maxPrice > 0) {
+    instructors = instructors.filter(i =>
+      i.hourly_rate == null || Number(i.hourly_rate) <= maxPrice
+    )
   }
+
+  // Log search
+  if (suburb) {
+    supabaseServer
+      .from('search_logs')
+      .insert({ suburb, results_count: instructors.length })
+      .then(() => {})
+      .catch(() => {})
+  }
+
+  return NextResponse.json({
+    instructors,
+    total: instructors.length,
+  })
 }
