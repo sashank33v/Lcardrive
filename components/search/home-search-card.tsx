@@ -18,7 +18,8 @@ export function HomeSearchCard() {
   }
 
   return (
-    <div className="bg-white rounded-2xl p-4 shadow-sm mb-5 md:shadow-md">
+    <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+
       {/* Suburb autocomplete */}
       <div className="mb-3">
         <SuburbAutocomplete
@@ -32,10 +33,10 @@ export function HomeSearchCard() {
         />
       </div>
 
-      {/* Search button */}
+      {/* Search button — lime yellow with dark text */}
       <button
         onClick={handleSearch}
-        className="w-full bg-[#1A3CFF] text-white font-semibold py-3.5 rounded-xl hover:bg-blue-700 active:bg-blue-800 transition-colors"
+        className="w-full bg-[#FACC15] text-gray-900 font-semibold py-3.5 rounded-xl hover:bg-yellow-400 active:bg-yellow-500 transition-colors"
       >
         Search Instructors
       </button>
@@ -50,7 +51,7 @@ export function HomeSearchCard() {
           <Link
             key={label}
             href={`/search?transmission=${filter === 'anxiety-friendly' ? '' : filter}${filter === 'anxiety-friendly' ? '&anxiety=true' : ''}`}
-            className="flex items-center gap-1.5 px-4 py-2 bg-[#F0F2FF] border border-gray-200 rounded-full text-sm font-medium text-gray-700 whitespace-nowrap hover:border-[#1A3CFF] hover:text-[#1A3CFF] transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2 bg-gray-50 border border-gray-200 rounded-full text-sm font-medium text-gray-700 whitespace-nowrap hover:border-[#FACC15] hover:bg-yellow-50 hover:text-gray-900 transition-colors"
           >
             <Icon size={14} />
             {label}

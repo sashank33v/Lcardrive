@@ -16,7 +16,7 @@ const NAV = [
 ]
 
 function ShieldIcon({ gold = false }: { gold?: boolean }) {
-  const bg = gold ? '#FFC400' : '#1A3CFF'
+  const bg = gold ? '#FACC15' : '#1a1a1a'
   return (
     <svg viewBox="0 0 40 40" width="28" height="28" xmlns="http://www.w3.org/2000/svg">
       <rect width="40" height="40" rx="9" fill={bg} />
@@ -58,26 +58,26 @@ export function Header() {
 
   return (
     <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
-      <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
+      <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
 
         {/* Logo */}
         <Link href={adminMode ? '/admin' : '/'} className="flex items-center gap-2 flex-shrink-0" aria-label="LCarDrive">
           <ShieldIcon gold={adminMode} />
-          <span className={`font-bold text-lg ${adminMode ? 'text-yellow-500' : 'text-[#1A3CFF]'}`}>
+          <span className={`font-bold text-lg ${adminMode ? 'text-[#FACC15]' : 'text-gray-900'}`}>
             LCarDrive
           </span>
           {adminMode && (
-            <span className="text-yellow-400 text-[10px] font-semibold tracking-wide">ADMIN</span>
+            <span className="text-[#FACC15] text-[10px] font-semibold tracking-wide">ADMIN</span>
           )}
         </Link>
 
-        {/* Desktop nav — clean, no admin button here */}
+        {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-1" aria-label="Main navigation">
           {NAV.map(({ href, label }) => (
             <Link key={href} href={href}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                 pathname === href
-                  ? 'text-[#1A3CFF] bg-blue-50'
+                  ? 'text-gray-900 bg-[#FACC15]'
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
               }`}
             >
@@ -89,9 +89,8 @@ export function Header() {
           ))}
         </nav>
 
-        {/* Desktop right — Search · Admin · Avatar */}
+        {/* Desktop right */}
         <div className="hidden md:flex items-center gap-2">
-          {/* Search */}
           <Link href="/search"
             className="flex items-center gap-2 text-sm text-gray-500 border border-gray-200 rounded-xl px-3 py-1.5 hover:border-gray-300 transition-colors"
             aria-label="Search instructors"
@@ -100,10 +99,8 @@ export function Header() {
             <span>Search instructors...</span>
           </Link>
 
-          {/* Admin button — only visible to admin users, sits right beside avatar */}
           {!adminMode && <AdminButton variant="nav" />}
 
-          {/* Exit admin — replaces admin button when in admin mode */}
           {adminMode && (
             <button onClick={exitAdmin}
               className="flex items-center gap-1.5 text-xs font-bold text-white bg-red-500 px-3 py-1.5 rounded-xl hover:bg-red-600 active:scale-95 transition-all shadow-sm"
@@ -143,10 +140,12 @@ export function Header() {
           {NAV.map(({ href, label }) => (
             <Link key={href} href={href} onClick={() => setOpen(false)}
               className={`flex items-center gap-2 px-3 py-3 rounded-xl text-sm font-medium transition-colors ${
-                pathname === href ? 'text-[#1A3CFF] bg-blue-50' : 'text-gray-700 hover:bg-gray-50'
+                pathname === href
+                  ? 'text-gray-900 bg-[#FACC15]'
+                  : 'text-gray-700 hover:bg-gray-50'
               }`}
             >
-              {label === 'AI Match' && <Sparkles size={14} className="text-purple-500" />}
+              {label === 'AI Match' && <Sparkles size={14} className="text-gray-700" />}
               {label}
             </Link>
           ))}

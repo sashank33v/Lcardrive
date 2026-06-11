@@ -26,7 +26,7 @@ export function SearchBarClient({ defaultSuburb = '' }: Props) {
       </div>
       <button
         onClick={() => go(suburb)}
-        className="flex items-center gap-2 bg-[#1A3CFF] text-white font-semibold px-4 py-3 rounded-xl hover:bg-blue-700 transition-colors flex-shrink-0"
+        className="flex items-center gap-2 bg-[#FACC15] text-gray-900 font-semibold px-4 py-3 rounded-xl hover:bg-yellow-400 active:bg-yellow-500 transition-colors flex-shrink-0"
       >
         <Search size={16} />
         <span className="hidden sm:inline">Search</span>

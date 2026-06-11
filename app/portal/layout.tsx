@@ -15,11 +15,11 @@ export const metadata: Metadata = {
 }
 
 const NAV = [
-  { href: '/portal',               label: 'Dashboard',    Icon: LayoutDashboard },
-  { href: '/portal/profile',       label: 'My Profile',   Icon: User            },
-  { href: '/portal/pricing',       label: 'Pricing',      Icon: DollarSign      },
-  { href: '/portal/availability',  label: 'Availability', Icon: Calendar        },
-  { href: '/portal/service-areas', label: 'Service Areas',Icon: MapPin          },
+  { href: '/portal',               label: 'Dashboard',     Icon: LayoutDashboard },
+  { href: '/portal/profile',       label: 'My Profile',    Icon: User            },
+  { href: '/portal/pricing',       label: 'Pricing',       Icon: DollarSign      },
+  { href: '/portal/availability',  label: 'Availability',  Icon: Calendar        },
+  { href: '/portal/service-areas', label: 'Service Areas', Icon: MapPin          },
 ]
 
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
@@ -27,9 +27,8 @@ export default async function PortalLayout({ children }: { children: React.React
   if (!userId) redirect('/sign-in')
 
   return (
-    <div className="min-h-screen bg-[#F0F2FF]">
+    <div className="min-h-screen bg-white">
       <Header />
-
       <div className="max-w-5xl mx-auto px-4 py-6 pb-24 md:pb-12">
 
         {/* Mobile horizontal nav */}
@@ -39,7 +38,7 @@ export default async function PortalLayout({ children }: { children: React.React
               <Link
                 key={href}
                 href={href}
-                className="flex items-center gap-1.5 px-3 py-2.5 bg-white rounded-xl text-xs font-medium text-gray-700 whitespace-nowrap border border-gray-200 hover:border-[#1A3CFF] hover:text-[#1A3CFF] transition-colors flex-shrink-0"
+                className="flex items-center gap-1.5 px-3 py-2.5 bg-white rounded-xl text-xs font-medium text-gray-700 whitespace-nowrap border border-gray-200 hover:border-[#FACC15] hover:text-gray-900 transition-colors flex-shrink-0"
               >
                 <Icon size={14} />
                 {label}
@@ -52,7 +51,7 @@ export default async function PortalLayout({ children }: { children: React.React
 
           {/* Desktop sidebar */}
           <aside className="hidden md:block w-52 flex-shrink-0">
-            <div className="bg-white rounded-2xl p-3 sticky top-20">
+            <div className="bg-white rounded-2xl p-3 sticky top-20 border border-gray-100">
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide px-3 py-2">
                 Instructor Portal
               </p>
@@ -61,10 +60,10 @@ export default async function PortalLayout({ children }: { children: React.React
                   <Link
                     key={href}
                     href={href}
-                    className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors group"
+                    className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm text-gray-700 hover:bg-yellow-50 hover:text-gray-900 transition-colors group"
                   >
                     <div className="flex items-center gap-2.5">
-                      <Icon size={15} className="text-gray-400 group-hover:text-[#1A3CFF] transition-colors" />
+                      <Icon size={15} className="text-gray-400 group-hover:text-[#FACC15] transition-colors" />
                       {label}
                     </div>
                     <ChevronRight size={14} className="text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -76,10 +75,8 @@ export default async function PortalLayout({ children }: { children: React.React
 
           {/* Main content */}
           <main className="flex-1 min-w-0">{children}</main>
-
         </div>
       </div>
-
       <BottomNav />
     </div>
   )

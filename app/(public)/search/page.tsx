@@ -53,8 +53,8 @@ async function Results({ searchParams }: PageProps) {
   if (!sp.suburb && instructors.length === 0) {
     return (
       <div className="text-center py-20">
-        <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-          <SearchIcon size={28} className="text-[#1A3CFF]" />
+        <div className="w-16 h-16 bg-yellow-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <SearchIcon size={28} className="text-[#FACC15]" />
         </div>
         <h2 className="text-xl font-bold text-gray-900 mb-2">Search for instructors</h2>
         <p className="text-gray-500 text-sm mb-8">Enter a suburb or postcode above to get started</p>
@@ -62,7 +62,7 @@ async function Results({ searchParams }: PageProps) {
         <div className="flex flex-wrap gap-2 justify-center">
           {NEARBY.map(s => (
             <Link key={s} href={`/search?suburb=${encodeURIComponent(s)}`}
-              className="text-sm text-[#1A3CFF] bg-blue-50 border border-blue-100 px-3 py-1.5 rounded-full hover:bg-blue-100 transition-colors"
+              className="text-sm text-gray-700 bg-yellow-50 border border-yellow-100 px-3 py-1.5 rounded-full hover:bg-yellow-100 transition-colors"
             >
               {s}
             </Link>
@@ -75,16 +75,16 @@ async function Results({ searchParams }: PageProps) {
   if (instructors.length === 0) {
     return (
       <div className="py-12">
-        <div className="bg-white rounded-2xl p-8 text-center mb-6">
-          <div className="w-14 h-14 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <MapPin size={24} className="text-amber-500" />
+        <div className="bg-white rounded-2xl p-8 text-center mb-6 border border-gray-100">
+          <div className="w-14 h-14 bg-yellow-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <MapPin size={24} className="text-[#FACC15]" />
           </div>
           <h2 className="text-xl font-bold text-gray-900 mb-2">No instructors found in {sp.suburb}</h2>
           <p className="text-gray-500 text-sm mb-6">Try a nearby suburb or broaden your filters.</p>
           <div className="flex flex-wrap gap-2 justify-center">
             {NEARBY.map(s => (
               <Link key={s} href={`/search?suburb=${encodeURIComponent(s)}`}
-                className="text-sm text-[#1A3CFF] bg-blue-50 px-3 py-1.5 rounded-full hover:bg-blue-100 transition-colors border border-blue-100"
+                className="text-sm text-gray-700 bg-yellow-50 px-3 py-1.5 rounded-full hover:bg-yellow-100 transition-colors border border-yellow-100"
               >
                 Try {s}
               </Link>
@@ -98,17 +98,17 @@ async function Results({ searchParams }: PageProps) {
   return (
     <div>
       {/* AI banner */}
-      <div className="bg-gradient-to-r from-purple-600 to-[#1A3CFF] rounded-2xl p-4 mb-6 flex items-center justify-between gap-4">
+      <div className="bg-gray-900 rounded-2xl p-4 mb-6 flex items-center justify-between gap-4">
         <div>
           <p className="text-white font-bold text-sm flex items-center gap-2">
-            <Sparkles size={14} /> Smart Matching
+            <Sparkles size={14} className="text-[#FACC15]" /> Smart Matching
           </p>
-          <p className="text-white/80 text-xs mt-0.5">
+          <p className="text-gray-400 text-xs mt-0.5">
             Not sure who to pick? Our AI finds your top 3.
           </p>
         </div>
         <Link href="/find-my-instructor" className="flex-shrink-0">
-          <button className="bg-white text-purple-700 text-xs font-bold px-4 py-2 rounded-xl hover:bg-purple-50 transition-colors flex items-center gap-1">
+          <button className="bg-[#FACC15] text-gray-900 text-xs font-bold px-4 py-2 rounded-xl hover:bg-yellow-400 transition-colors flex items-center gap-1">
             Help me choose <ArrowRight size={12} />
           </button>
         </Link>
@@ -130,28 +130,28 @@ export default async function SearchPage({ searchParams }: PageProps) {
   const sp = await searchParams
 
   return (
-    <div className="min-h-screen bg-[#F0F2FF] flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col">
       <Header />
 
-      {/* Search bar — uses client component to avoid RSC handler error */}
+      {/* Search bar */}
       <div className="bg-white border-b border-gray-100 py-4">
-        <div className="max-w-6xl mx-auto px-4">
+        <div className="max-w-5xl mx-auto px-4">
           <SearchBarClient defaultSuburb={sp.suburb || ''} />
 
           {/* Active filter chips */}
           <div className="flex gap-2 flex-wrap mt-3">
             {sp.transmission && (
-              <span className="text-xs bg-blue-100 text-blue-700 font-semibold px-3 py-1 rounded-full capitalize">
+              <span className="text-xs bg-yellow-50 text-yellow-700 border border-yellow-100 font-semibold px-3 py-1 rounded-full capitalize">
                 {sp.transmission}
               </span>
             )}
             {sp.anxietyFriendly === '1' && (
-              <span className="text-xs bg-purple-100 text-purple-700 font-semibold px-3 py-1 rounded-full">
+              <span className="text-xs bg-yellow-50 text-yellow-700 border border-yellow-100 font-semibold px-3 py-1 rounded-full">
                 Anxiety-friendly
               </span>
             )}
             {sp.maxPrice && (
-              <span className="text-xs bg-green-100 text-green-700 font-semibold px-3 py-1 rounded-full">
+              <span className="text-xs bg-yellow-50 text-yellow-700 border border-yellow-100 font-semibold px-3 py-1 rounded-full">
                 Under ${sp.maxPrice}/hr
               </span>
             )}
@@ -166,12 +166,12 @@ export default async function SearchPage({ searchParams }: PageProps) {
         </div>
       </div>
 
-      <div className="flex-1 max-w-6xl mx-auto px-4 py-6 w-full pb-24">
+      <div className="flex-1 max-w-5xl mx-auto px-4 py-6 w-full pb-24">
         <div className="flex gap-6">
 
           {/* Desktop sidebar filters */}
           <aside className="hidden lg:block w-56 flex-shrink-0">
-            <div className="bg-white rounded-2xl p-4 sticky top-20">
+            <div className="bg-white rounded-2xl p-4 sticky top-20 border border-gray-100">
               <div className="flex items-center gap-2 mb-4">
                 <SlidersHorizontal size={15} className="text-gray-500" />
                 <p className="text-sm font-bold text-gray-900">Filters</p>
@@ -184,7 +184,9 @@ export default async function SearchPage({ searchParams }: PageProps) {
                   {['auto','manual','both'].map(t => (
                     <label key={t} className="flex items-center gap-2.5 py-1.5 cursor-pointer">
                       <input type="radio" name="transmission" value={t}
-                        defaultChecked={sp.transmission === t} className="accent-[#1A3CFF]" />
+                        defaultChecked={sp.transmission === t}
+                        className="accent-[#FACC15]"
+                      />
                       <span className="text-sm text-gray-700 capitalize">{t}</span>
                     </label>
                   ))}
@@ -195,7 +197,9 @@ export default async function SearchPage({ searchParams }: PageProps) {
                   {[60,80,100,120].map(p => (
                     <label key={p} className="flex items-center gap-2.5 py-1.5 cursor-pointer">
                       <input type="radio" name="maxPrice" value={p}
-                        defaultChecked={sp.maxPrice === String(p)} className="accent-[#1A3CFF]" />
+                        defaultChecked={sp.maxPrice === String(p)}
+                        className="accent-[#FACC15]"
+                      />
                       <span className="text-sm text-gray-700">Up to ${p}/hr</span>
                     </label>
                   ))}
@@ -205,18 +209,22 @@ export default async function SearchPage({ searchParams }: PageProps) {
                   <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Preferences</p>
                   <label className="flex items-center gap-2.5 py-1.5 cursor-pointer">
                     <input type="checkbox" name="anxietyFriendly" value="1"
-                      defaultChecked={sp.anxietyFriendly === '1'} className="accent-[#1A3CFF]" />
+                      defaultChecked={sp.anxietyFriendly === '1'}
+                      className="accent-[#FACC15]"
+                    />
                     <span className="text-sm text-gray-700">Anxiety-friendly</span>
                   </label>
                   <label className="flex items-center gap-2.5 py-1.5 cursor-pointer">
                     <input type="checkbox" name="international" value="1"
-                      defaultChecked={sp.international === '1'} className="accent-[#1A3CFF]" />
+                      defaultChecked={sp.international === '1'}
+                      className="accent-[#FACC15]"
+                    />
                     <span className="text-sm text-gray-700">International learners</span>
                   </label>
                 </div>
 
                 <button type="submit"
-                  className="w-full bg-[#1A3CFF] text-white text-sm font-semibold py-2.5 rounded-xl hover:bg-blue-700 transition-colors"
+                  className="w-full bg-[#FACC15] text-gray-900 text-sm font-semibold py-2.5 rounded-xl hover:bg-yellow-400 transition-colors"
                 >
                   Apply Filters
                 </button>
@@ -234,6 +242,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
               <Results searchParams={searchParams} />
             </Suspense>
           </main>
+
         </div>
       </div>
 

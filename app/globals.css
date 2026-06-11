@@ -2,9 +2,11 @@
 
 /* ── Design tokens ── */
 :root {
-  --primary:    #1A3CFF;
-  --bg:         #F0F2FF;
-  --navy:       #1A2444;
+  --primary:    #F97316;
+  --primary-dark: #EA6C0A;
+  --primary-light: #FFF7ED;
+  --bg:         #FFFFFF;
+  --navy:       #1a1a1a;
 }
 
 /* ── Mobile base resets ── */
@@ -77,7 +79,7 @@ input[type="range"]::-webkit-slider-thumb {
   background: var(--primary);
   cursor: pointer;
   border: 2px solid white;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
 }
 
 input[type="range"]::-moz-range-thumb {
@@ -106,9 +108,9 @@ input[type="range"]::-moz-range-thumb {
   animation: shimmer 1.5s ease-in-out infinite;
   background: linear-gradient(
     90deg,
-    #f0f0f0 25%,
-    #e0e0e0 50%,
-    #f0f0f0 75%
+    #f5f5f5 25%,
+    #ebebeb 50%,
+    #f5f5f5 75%
   );
   background-size: 200% 100%;
 }
@@ -126,4 +128,4 @@ input[type="range"]::-moz-range-thumb {
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
 /* ── Accessibility — ensure all text colors meet WCAG AA ── */
-.text-gray-400 { color: #6B7280 !important; } /* was too light */
+.text-gray-400 { color: #6B7280 !important; }

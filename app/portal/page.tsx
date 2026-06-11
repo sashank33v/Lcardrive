@@ -10,16 +10,16 @@ import { supabaseServer } from '@/lib/clients/supabase-server'
 
 function calcCompleteness(i: any): { score: number; missing: string[] } {
   const checks = [
-    { done: !!i.profile_photo_url,                  label: 'Add a profile photo'        },
-    { done: !!i.bio?.trim(),                         label: 'Write your bio'             },
-    { done: !!i.hourly_rate,                         label: 'Set your hourly rate'       },
-    { done: !!i.transmission,                        label: 'Set transmission type'      },
-    { done: !!i.phone?.trim(),                       label: 'Add phone number'           },
-    { done: !!i.vehicle_make,                        label: 'Add vehicle details'        },
-    { done: (i.availability_days || []).length > 0,  label: 'Set available days'         },
-    { done: (i.familiar_test_centres || []).length > 0, label: 'Add test centres'       },
-    { done: (i.languages || []).length > 0,          label: 'Add languages spoken'       },
-    { done: !!i.years_experience,                    label: 'Add years of experience'    },
+    { done: !!i.profile_photo_url,                     label: 'Add a profile photo'     },
+    { done: !!i.bio?.trim(),                            label: 'Write your bio'          },
+    { done: !!i.hourly_rate,                            label: 'Set your hourly rate'    },
+    { done: !!i.transmission,                           label: 'Set transmission type'   },
+    { done: !!i.phone?.trim(),                          label: 'Add phone number'        },
+    { done: !!i.vehicle_make,                           label: 'Add vehicle details'     },
+    { done: (i.availability_days || []).length > 0,     label: 'Set available days'      },
+    { done: (i.familiar_test_centres || []).length > 0, label: 'Add test centres'        },
+    { done: (i.languages || []).length > 0,             label: 'Add languages spoken'    },
+    { done: !!i.years_experience,                       label: 'Add years of experience' },
   ]
   const done    = checks.filter(c => c.done).length
   const missing = checks.filter(c => !c.done).map(c => c.label)
@@ -42,9 +42,9 @@ export default async function PortalDashboard() {
       <div className="space-y-5">
 
         {/* Welcome banner */}
-        <div className="bg-[#1A3CFF] rounded-2xl p-6 text-white">
+        <div className="bg-gray-900 rounded-2xl p-6 text-white">
           <h1 className="text-2xl font-bold mb-1">Welcome to LCarDrive! 👋</h1>
-          <p className="text-blue-200 text-sm">
+          <p className="text-gray-400 text-sm">
             Get your free instructor profile set up in 3 easy steps.
           </p>
         </div>
@@ -53,35 +53,32 @@ export default async function PortalDashboard() {
         <div className="grid grid-cols-1 gap-3">
           {[
             {
-              step: '1',
+              step:  '1',
               title: 'Find your listing',
               desc:  'Search for your name in our directory. We may already have your listing from public records.',
               Icon:  Search,
               href:  '/search',
               label: 'Search now',
-              done:  false,
             },
             {
-              step: '2',
+              step:  '2',
               title: 'Claim your profile',
-              desc:  'Verify your ADI registration number to prove you\'re the instructor.',
+              desc:  "Verify your ADI registration number to prove you're the instructor.",
               Icon:  Shield,
               href:  '/search',
               label: 'Find & claim',
-              done:  false,
             },
             {
-              step: '3',
+              step:  '3',
               title: 'Complete your profile',
               desc:  'Add your photo, bio, pricing and availability to rank higher in search.',
               Icon:  User,
               href:  '/portal/profile',
               label: 'Edit profile',
-              done:  false,
             },
           ].map(({ step, title, desc, Icon, href, label }) => (
-            <div key={step} className="bg-white rounded-2xl p-5 flex items-start gap-4">
-              <div className="w-10 h-10 bg-[#1A3CFF] text-white rounded-xl flex items-center justify-center font-bold text-lg flex-shrink-0">
+            <div key={step} className="bg-white rounded-2xl p-5 flex items-start gap-4 border border-gray-100">
+              <div className="w-10 h-10 bg-[#FACC15] text-gray-900 rounded-xl flex items-center justify-center font-bold text-lg flex-shrink-0">
                 {step}
               </div>
               <div className="flex-1 min-w-0">
@@ -89,7 +86,7 @@ export default async function PortalDashboard() {
                 <p className="text-sm text-gray-500 leading-relaxed">{desc}</p>
               </div>
               <Link href={href} className="flex-shrink-0">
-                <button className="flex items-center gap-1.5 bg-[#1A3CFF] text-white text-xs font-semibold px-4 py-2.5 rounded-xl hover:bg-blue-700 transition-colors whitespace-nowrap">
+                <button className="flex items-center gap-1.5 bg-[#FACC15] text-gray-900 text-xs font-semibold px-4 py-2.5 rounded-xl hover:bg-yellow-400 transition-colors whitespace-nowrap">
                   {label} <ArrowRight size={12} />
                 </button>
               </Link>
@@ -98,9 +95,9 @@ export default async function PortalDashboard() {
         </div>
 
         {/* Info card */}
-        <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4">
-          <p className="text-sm text-blue-800 font-semibold mb-1">✦ Completely free</p>
-          <p className="text-sm text-blue-700">
+        <div className="bg-yellow-50 border border-yellow-100 rounded-2xl p-4">
+          <p className="text-sm text-yellow-800 font-semibold mb-1">✦ Completely free</p>
+          <p className="text-sm text-yellow-700">
             LCarDrive is free for instructors. No subscription, no commission, no hidden fees.
             Claim your listing and start getting found by learners today.
           </p>
@@ -115,14 +112,14 @@ export default async function PortalDashboard() {
 
   const progressColor =
     score >= 80 ? 'bg-green-500' :
-    score >= 50 ? 'bg-yellow-500' :
+    score >= 50 ? 'bg-[#FACC15]' :
     'bg-red-400'
 
   const QUICK_ACTIONS = [
-    { href: '/portal/profile',       label: 'Edit Profile',    Icon: User,        desc: 'Name, bio, photo'       },
-    { href: '/portal/pricing',       label: 'Set Pricing',     Icon: DollarSign,  desc: 'Hourly rate & packages' },
-    { href: '/portal/availability',  label: 'Availability',    Icon: Calendar,    desc: 'Days & time slots'      },
-    { href: '/portal/service-areas', label: 'Service Areas',   Icon: MapPin,      desc: 'Suburbs you cover'      },
+    { href: '/portal/profile',       label: 'Edit Profile',   Icon: User,       desc: 'Name, bio, photo'       },
+    { href: '/portal/pricing',       label: 'Set Pricing',    Icon: DollarSign, desc: 'Hourly rate & packages' },
+    { href: '/portal/availability',  label: 'Availability',   Icon: Calendar,   desc: 'Days & time slots'      },
+    { href: '/portal/service-areas', label: 'Service Areas',  Icon: MapPin,     desc: 'Suburbs you cover'      },
   ]
 
   return (
@@ -139,7 +136,7 @@ export default async function PortalDashboard() {
       </div>
 
       {/* Profile completeness */}
-      <div className="bg-white rounded-2xl p-5">
+      <div className="bg-white rounded-2xl p-5 border border-gray-100">
         <div className="flex items-center justify-between mb-3">
           <div>
             <p className="font-bold text-gray-900">Profile Strength</p>
@@ -151,7 +148,8 @@ export default async function PortalDashboard() {
           </div>
           <span className={`text-3xl font-bold ${
             score >= 80 ? 'text-green-600' :
-            score >= 50 ? 'text-yellow-600' : 'text-red-500'
+            score >= 50 ? 'text-yellow-600' :
+            'text-red-500'
           }`}>{score}%</span>
         </div>
 
@@ -187,15 +185,17 @@ export default async function PortalDashboard() {
         <div className={`rounded-2xl p-4 border ${
           instructor.is_claimed
             ? 'bg-yellow-50 border-yellow-200'
-            : 'bg-blue-50 border-blue-100'
+            : 'bg-gray-50 border-gray-100'
         }`}>
-          <p className={`font-semibold text-sm ${instructor.is_claimed ? 'text-yellow-800' : 'text-blue-800'}`}>
+          <p className={`font-semibold text-sm ${
+            instructor.is_claimed ? 'text-yellow-800' : 'text-gray-700'
+          }`}>
             {instructor.is_claimed
-              ? '⏳ Claim under review — we\'ll verify within 48 hours'
+              ? "⏳ Claim under review — we'll verify within 48 hours"
               : '⚠️ Profile not yet claimed'}
           </p>
           {!instructor.is_claimed && (
-            <Link href={`/claim/${instructor.id}`} className="text-xs text-blue-700 underline mt-1 inline-block">
+            <Link href={`/claim/${instructor.id}`} className="text-xs text-gray-600 underline mt-1 inline-block">
               Claim your profile →
             </Link>
           )}
@@ -218,9 +218,9 @@ export default async function PortalDashboard() {
         <div className="grid grid-cols-2 gap-3">
           {QUICK_ACTIONS.map(({ href, label, Icon, desc }) => (
             <Link key={href} href={href}>
-              <div className="bg-white rounded-2xl p-4 hover:shadow-sm hover:border-gray-200 border border-transparent transition-all cursor-pointer h-full">
-                <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center mb-3">
-                  <Icon size={18} className="text-[#1A3CFF]" />
+              <div className="bg-white rounded-2xl p-4 hover:shadow-sm hover:border-yellow-200 border border-gray-100 transition-all cursor-pointer h-full">
+                <div className="w-10 h-10 bg-yellow-50 rounded-xl flex items-center justify-center mb-3">
+                  <Icon size={18} className="text-[#FACC15]" />
                 </div>
                 <p className="font-semibold text-gray-900 text-sm">{label}</p>
                 <p className="text-xs text-gray-500 mt-0.5">{desc}</p>
@@ -232,16 +232,16 @@ export default async function PortalDashboard() {
 
       {/* AI bio prompt */}
       {!instructor.bio && (
-        <div className="bg-gradient-to-r from-purple-600 to-[#1A3CFF] rounded-2xl p-5">
+        <div className="bg-gray-900 rounded-2xl p-5">
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
-              <Sparkles size={18} className="text-white" />
+            <div className="w-10 h-10 bg-[#FACC15] rounded-xl flex items-center justify-center flex-shrink-0">
+              <Sparkles size={18} className="text-gray-900" />
             </div>
             <div className="flex-1">
               <p className="text-white font-bold text-sm mb-1">Write your bio with AI</p>
-              <p className="text-white/80 text-xs mb-3">Generate a professional bio in seconds.</p>
+              <p className="text-gray-400 text-xs mb-3">Generate a professional bio in seconds.</p>
               <Link href="/portal/profile#bio">
-                <button className="flex items-center gap-1.5 bg-white text-purple-700 text-xs font-semibold px-4 py-2 rounded-xl hover:bg-purple-50 transition-colors">
+                <button className="flex items-center gap-1.5 bg-[#FACC15] text-gray-900 text-xs font-semibold px-4 py-2 rounded-xl hover:bg-yellow-400 transition-colors">
                   Generate Bio <ArrowRight size={12} />
                 </button>
               </Link>
@@ -262,7 +262,7 @@ export default async function PortalDashboard() {
               <p className="text-xs text-gray-500 mt-0.5">Profiles with photos get 3× more views</p>
             </div>
             <Link href="/portal/profile">
-              <button className="text-xs bg-[#1A3CFF] text-white px-3 py-2 rounded-xl font-medium hover:bg-blue-700 transition-colors">
+              <button className="text-xs bg-[#FACC15] text-gray-900 px-3 py-2 rounded-xl font-medium hover:bg-yellow-400 transition-colors">
                 Add photo
               </button>
             </Link>

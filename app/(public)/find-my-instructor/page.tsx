@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Car, Sparkles, MapPin, Brain, ChevronRight, ChevronLeft, Loader2, CheckCircle } from 'lucide-react'
+import { Car, Sparkles, Brain, ChevronRight, ChevronLeft, Loader2, CheckCircle } from 'lucide-react'
 import { Header } from '@/components/layout/header'
 import { BottomNav } from '@/components/layout/bottom-nav'
 import { InstructorCard } from '@/components/instructor/instructor-card'
@@ -17,20 +17,20 @@ const STEPS = [
 ]
 
 const Q1 = [
-  { value: 'auto',   icon: Car,    title: 'Automatic',  desc: 'Easier to learn, no gear changes to worry about'  },
-  { value: 'manual', icon: Car,    title: 'Manual',     desc: 'Traditional gear shifting, full control'           },
-  { value: 'both',   icon: Car,    title: 'Either',     desc: 'Open to both, happy to follow instructor\'s advice'},
+  { value: 'auto',   icon: Car,    title: 'Automatic',  desc: 'Easier to learn, no gear changes to worry about'   },
+  { value: 'manual', icon: Car,    title: 'Manual',     desc: 'Traditional gear shifting, full control'            },
+  { value: 'both',   icon: Car,    title: 'Either',     desc: "Open to both, happy to follow instructor's advice"  },
 ]
 const Q2 = [
-  { value: 'complete_beginner', icon: Sparkles,    title: 'Complete beginner',  desc: 'Never driven before'                        },
-  { value: 'some_experience',   icon: Sparkles,    title: 'Some experience',    desc: 'Had a few lessons or practised with family'  },
-  { value: 'test_ready',        icon: CheckCircle, title: 'Test ready',         desc: 'Need a few top-up lessons before the test'   },
+  { value: 'complete_beginner', icon: Sparkles,    title: 'Complete beginner', desc: 'Never driven before'                       },
+  { value: 'some_experience',   icon: Sparkles,    title: 'Some experience',   desc: 'Had a few lessons or practised with family' },
+  { value: 'test_ready',        icon: CheckCircle, title: 'Test ready',        desc: 'Need a few top-up lessons before the test'  },
 ]
 const Q3 = [
-  { value: 'patient_calm',  icon: Brain, title: 'Calm & patient',    desc: 'I get anxious and need a supportive instructor'    },
-  { value: 'goal_oriented', icon: Brain, title: 'Goal-oriented',     desc: 'I want to pass as efficiently as possible'          },
-  { value: 'technique',     icon: Brain, title: 'Technique-focused', desc: 'I want to understand the mechanics properly'        },
-  { value: 'no_preference', icon: Brain, title: 'No preference',     desc: 'Any good instructor works for me'                   },
+  { value: 'patient_calm',  icon: Brain, title: 'Calm & patient',    desc: 'I get anxious and need a supportive instructor' },
+  { value: 'goal_oriented', icon: Brain, title: 'Goal-oriented',     desc: 'I want to pass as efficiently as possible'      },
+  { value: 'technique',     icon: Brain, title: 'Technique-focused', desc: 'I want to understand the mechanics properly'    },
+  { value: 'no_preference', icon: Brain, title: 'No preference',     desc: 'Any good instructor works for me'               },
 ]
 
 export default function FindMyInstructor() {
@@ -73,25 +73,31 @@ export default function FindMyInstructor() {
   }
 
   function OptionCard({ value, icon: Icon, title, desc, selected, onSelect }: any) {
+    const isSelected = selected === value
     return (
-      <button onClick={() => onSelect(value)}
+      <button
+        onClick={() => onSelect(value)}
         className={`w-full text-left p-4 rounded-2xl border-2 transition-all ${
-          selected === value ? 'border-[#1A3CFF] bg-blue-50' : 'border-gray-200 bg-white hover:border-gray-300'
+          isSelected
+            ? 'border-[#FACC15] bg-yellow-50'
+            : 'border-gray-200 bg-white hover:border-gray-300'
         }`}
       >
         <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${
-          selected === value ? 'bg-[#1A3CFF]' : 'bg-gray-100'
+          isSelected ? 'bg-[#FACC15]' : 'bg-gray-100'
         }`}>
-          <Icon size={18} className={selected === value ? 'text-white' : 'text-gray-500'} />
+          <Icon size={18} className={isSelected ? 'text-gray-900' : 'text-gray-500'} />
         </div>
-        <p className={`font-semibold text-sm mb-0.5 ${selected === value ? 'text-[#1A3CFF]' : 'text-gray-900'}`}>{title}</p>
+        <p className={`font-semibold text-sm mb-0.5 ${isSelected ? 'text-gray-900' : 'text-gray-900'}`}>
+          {title}
+        </p>
         <p className="text-xs text-gray-500 leading-relaxed">{desc}</p>
       </button>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#F0F2FF] flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col">
       <Header />
 
       {step < 6 && (
@@ -101,8 +107,8 @@ export default function FindMyInstructor() {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-[#1A3CFF] rounded-xl flex items-center justify-center">
-                  <Sparkles size={15} className="text-white" />
+                <div className="w-8 h-8 bg-[#FACC15] rounded-xl flex items-center justify-center">
+                  <Sparkles size={15} className="text-gray-900" />
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 font-medium">AI Match Wizard</p>
@@ -112,14 +118,14 @@ export default function FindMyInstructor() {
               <div className="flex gap-1.5">
                 {STEPS.map(s => (
                   <div key={s.id} className={`h-1.5 rounded-full transition-all ${
-                    s.id <= step ? 'bg-[#1A3CFF] w-8' : 'bg-gray-200 w-4'
+                    s.id <= step ? 'bg-[#FACC15] w-8' : 'bg-gray-200 w-4'
                   }`} />
                 ))}
               </div>
             </div>
-            <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
+            <div className="h-1 bg-gray-100 rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-[#1A3CFF] to-purple-500 rounded-full transition-all duration-500"
+                className="h-full bg-[#FACC15] rounded-full transition-all duration-500"
                 style={{ width: `${progress}%` }}
               />
             </div>
@@ -158,12 +164,12 @@ export default function FindMyInstructor() {
             </div>
           )}
 
-          {/* Step 4 — Suburb with autocomplete */}
+          {/* Step 4 — Suburb */}
           {step === 4 && (
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-1">What suburb are you in?</h2>
               <p className="text-gray-500 text-sm mb-6">We'll find instructors who know your local roads.</p>
-              <div className="bg-white rounded-2xl p-6 border border-gray-200">
+              <div className="bg-white rounded-2xl p-6 border border-gray-100">
                 <label className="block text-sm font-semibold text-gray-700 mb-3">
                   Your suburb or postcode
                 </label>
@@ -182,24 +188,26 @@ export default function FindMyInstructor() {
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-1">What's your budget?</h2>
               <p className="text-gray-500 text-sm mb-6">Maximum hourly rate you're comfortable with.</p>
-              <div className="bg-white rounded-2xl p-6 border border-gray-200">
+              <div className="bg-white rounded-2xl p-6 border border-gray-100">
                 <div className="text-center mb-6">
-                  <span className="text-5xl font-bold text-[#1A3CFF]">${budget}</span>
+                  <span className="text-5xl font-bold text-gray-900">${budget}</span>
                   <span className="text-gray-500 text-lg">/hr</span>
                 </div>
                 <input
                   type="range" min={50} max={150} step={5} value={budget}
                   onChange={e => setBudget(Number(e.target.value))}
-                  className="w-full accent-[#1A3CFF] mb-3"
+                  className="w-full accent-[#FACC15] mb-3"
                 />
                 <div className="flex justify-between text-xs text-gray-400 mb-5">
                   <span>$50/hr</span><span>$150/hr</span>
                 </div>
                 <div className="flex justify-center gap-3">
-                  {[60,80,100,120].map(v => (
+                  {[60, 80, 100, 120].map(v => (
                     <button key={v} onClick={() => setBudget(v)}
                       className={`px-4 py-2 rounded-xl text-xs font-semibold transition-colors ${
-                        budget === v ? 'bg-[#1A3CFF] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        budget === v
+                          ? 'bg-[#FACC15] text-gray-900'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                       }`}
                     >
                       ${v}
@@ -219,13 +227,13 @@ export default function FindMyInstructor() {
             </button>
             {step < STEPS.length ? (
               <button onClick={next} disabled={!canNext()}
-                className="flex items-center gap-2 bg-[#1A3CFF] text-white font-semibold px-6 py-2.5 rounded-xl hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-95"
+                className="flex items-center gap-2 bg-[#FACC15] text-gray-900 font-semibold px-6 py-2.5 rounded-xl hover:bg-yellow-400 disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-95"
               >
                 Next Step <ChevronRight size={16} />
               </button>
             ) : (
               <button onClick={submit} disabled={loading || !canNext()}
-                className="flex items-center gap-2 bg-gradient-to-r from-[#1A3CFF] to-purple-600 text-white font-semibold px-6 py-2.5 rounded-xl hover:opacity-90 disabled:opacity-50 transition-all active:scale-95"
+                className="flex items-center gap-2 bg-[#FACC15] text-gray-900 font-semibold px-6 py-2.5 rounded-xl hover:bg-yellow-400 disabled:opacity-50 transition-all active:scale-95"
               >
                 {loading
                   ? <><Loader2 size={16} className="animate-spin" /> Matching...</>
@@ -241,8 +249,8 @@ export default function FindMyInstructor() {
       {step === 6 && results && (
         <div className="max-w-3xl mx-auto w-full px-4 py-8 pb-24">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-gradient-to-br from-[#1A3CFF] to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Sparkles size={28} className="text-white" />
+            <div className="w-16 h-16 bg-[#FACC15] rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Sparkles size={28} className="text-gray-900" />
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-1">
               Your top {results.length} match{results.length !== 1 ? 'es' : ''}
@@ -257,7 +265,7 @@ export default function FindMyInstructor() {
               {results.map((i: any) => <InstructorCard key={i.id} {...i} />)}
             </div>
           ) : (
-            <div className="bg-white rounded-2xl p-8 text-center mb-6">
+            <div className="bg-white rounded-2xl p-8 text-center mb-6 border border-gray-100">
               <p className="text-gray-500 mb-2">No exact matches found.</p>
               <p className="text-sm text-gray-400">Try broadening your preferences.</p>
             </div>
@@ -271,7 +279,7 @@ export default function FindMyInstructor() {
               Try again
             </button>
             <a href={`/search?suburb=${encodeURIComponent(suburb)}&transmission=${trans}`}
-              className="flex items-center justify-center gap-2 bg-[#1A3CFF] text-white font-semibold px-6 py-3 rounded-xl hover:bg-blue-700 transition-colors"
+              className="flex items-center justify-center gap-2 bg-[#FACC15] text-gray-900 font-semibold px-6 py-3 rounded-xl hover:bg-yellow-400 transition-colors"
             >
               Browse all in {suburb} <ChevronRight size={16} />
             </a>
