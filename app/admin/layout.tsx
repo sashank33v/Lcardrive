@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { auth } from '@clerk/nextjs/server'
+import { auth, currentUser } from '@clerk/nextjs/server'
 import type { Metadata } from 'next'
 import { LayoutDashboard, Users, Star, FileText, Upload, Flag } from 'lucide-react'
 import { Header } from '@/components/layout/header'
@@ -20,20 +20,24 @@ const NAV = [
 ]
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const authObj = await auth()
-  const role    = authObj.sessionClaims?.metadata?.role ?? authObj.sessionClaims?.publicMetadata?.role
+  const { userId } = await auth()
+  if (!userId) redirect('/sign-in')
+
+  // ── Check role via currentUser (reads publicMetadata reliably) ──
+  const user = await currentUser()
+  const role = (user?.publicMetadata as any)?.role
+
   if (role !== 'admin') redirect('/')
 
   return (
-    <div className="min-h-screen bg-[#F0F2FF]">
+    <div className="min-h-screen bg-white">
       <Header />
-
       <div className="max-w-6xl mx-auto px-4 py-6 pb-12">
         <div className="flex gap-6">
 
           {/* Sidebar */}
           <aside className="hidden md:block w-52 flex-shrink-0">
-            <div className="bg-white rounded-2xl p-3 sticky top-20">
+            <div className="bg-white rounded-2xl p-3 sticky top-20 border border-gray-100">
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide px-3 py-2 mb-1">
                 Admin Panel
               </p>
@@ -42,9 +46,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                   <Link
                     key={href}
                     href={href}
-                    className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                    className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-gray-700 hover:bg-yellow-50 hover:text-gray-900 transition-colors group"
                   >
-                    <Icon size={16} className="text-gray-400" />
+                    <Icon size={16} className="text-gray-400 group-hover:text-[#FACC15]" />
                     {label}
                   </Link>
                 ))}
@@ -54,12 +58,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
           {/* Mobile nav */}
           <div className="md:hidden w-full mb-4">
-            <div className="bg-white rounded-2xl p-2 flex gap-1 overflow-x-auto">
+            <div className="bg-white rounded-2xl p-2 flex gap-1 overflow-x-auto border border-gray-100">
               {NAV.map(({ href, label, Icon }) => (
                 <Link
                   key={href}
                   href={href}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium text-gray-700 hover:bg-gray-50 whitespace-nowrap transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium text-gray-700 hover:bg-yellow-50 whitespace-nowrap transition-colors"
                 >
                   <Icon size={14} />
                   {label}
@@ -69,7 +73,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </div>
 
           <main className="flex-1 min-w-0">{children}</main>
-
         </div>
       </div>
     </div>
