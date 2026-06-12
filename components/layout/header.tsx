@@ -3,17 +3,10 @@ import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Menu, X, Search, Sparkles, LogOut } from 'lucide-react'
-import { AdminButton } from './admin-button'
+import { Menu, X, Search, Sparkles, LogOut, ShieldCheck } from 'lucide-react'
+import { useUser } from '@clerk/nextjs'
 
 const UserMenu = dynamic(() => import('./user-menu').then(m => m.UserMenu), { ssr: false })
-
-const NAV = [
-  { href: '/',                   label: 'Home'     },
-  { href: '/search',             label: 'Find'     },
-  { href: '/find-my-instructor', label: 'AI Match' },
-  { href: '/portal',             label: 'Portal'   },
-]
 
 function ShieldIcon({ gold = false }: { gold?: boolean }) {
   const bg = gold ? '#FACC15' : '#1a1a1a'
@@ -36,11 +29,14 @@ function ShieldIcon({ gold = false }: { gold?: boolean }) {
 }
 
 export function Header() {
-  const pathname = usePathname()
-  const router   = useRouter()
+  const pathname  = usePathname()
+  const router    = useRouter()
+  const { user }  = useUser()
   const [open, setOpen] = useState(false)
 
-  // ── Read adminMode directly from localStorage on first render ──
+  const isAdmin = (user?.publicMetadata as any)?.role === 'admin'
+
+  // ── Initialize directly from localStorage to avoid flash ──
   const [adminMode, setAdminMode] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false
     return (
@@ -49,14 +45,12 @@ export function Header() {
     )
   })
 
-  // ── Keep in sync when pathname changes ──
   useEffect(() => {
     if (pathname.startsWith('/admin')) {
       localStorage.setItem('lcardrive_admin_mode', 'true')
       setAdminMode(true)
     } else {
-      const stored = localStorage.getItem('lcardrive_admin_mode') === 'true'
-      setAdminMode(stored)
+      setAdminMode(localStorage.getItem('lcardrive_admin_mode') === 'true')
     }
   }, [pathname])
 
@@ -65,6 +59,14 @@ export function Header() {
     setAdminMode(false)
     router.push('/')
   }
+
+  const NAV = [
+    { href: '/',                   label: 'Home'     },
+    { href: '/search',             label: 'Find'     },
+    { href: '/find-my-instructor', label: 'AI Match' },
+    { href: '/portal',             label: 'Portal'   },
+    ...(isAdmin ? [{ href: '/admin', label: 'Admin' }] : []),
+  ]
 
   return (
     <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
@@ -83,20 +85,34 @@ export function Header() {
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-1" aria-label="Main navigation">
-          {NAV.map(({ href, label }) => (
-            <Link key={href} href={href}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                pathname === href
-                  ? 'text-gray-900 bg-[#FACC15]'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-              }`}
-            >
-              {label === 'AI Match' && (
-                <Sparkles size={12} className="inline mr-1 mb-0.5" aria-hidden="true" />
-              )}
-              {label}
-            </Link>
-          ))}
+          {NAV.map(({ href, label }) => {
+            const isAdminTab = label === 'Admin'
+            const isActive   = pathname === href || (href === '/admin' && pathname.startsWith('/admin'))
+            return (
+              <Link key={href} href={href}
+                onClick={() => {
+                  if (isAdminTab) localStorage.setItem('lcardrive_admin_mode', 'true')
+                }}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-1 ${
+                  isAdminTab
+                    ? isActive
+                      ? 'bg-[#FACC15] text-gray-900'
+                      : 'text-yellow-600 hover:bg-yellow-50 border border-yellow-200'
+                    : isActive
+                      ? 'text-gray-900 bg-[#FACC15]'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                }`}
+              >
+                {label === 'AI Match' && (
+                  <Sparkles size={12} className="inline mr-0.5" aria-hidden="true" />
+                )}
+                {label === 'Admin' && (
+                  <ShieldCheck size={12} className="inline mr-0.5" aria-hidden="true" />
+                )}
+                {label}
+              </Link>
+            )
+          })}
         </nav>
 
         {/* Desktop right */}
@@ -109,10 +125,6 @@ export function Header() {
             <span>Search instructors...</span>
           </Link>
 
-          {/* Show Admin button only when NOT in admin mode */}
-          {!adminMode && <AdminButton variant="nav" />}
-
-          {/* Show Exit Admin button when IN admin mode */}
           {adminMode && (
             <button onClick={exitAdmin}
               className="flex items-center gap-1.5 text-xs font-bold text-white bg-red-500 px-3 py-1.5 rounded-xl hover:bg-red-600 active:scale-95 transition-all shadow-sm"
@@ -149,23 +161,29 @@ export function Header() {
       {/* Mobile menu */}
       {open && (
         <div className="md:hidden bg-white border-t border-gray-100 px-4 py-3 space-y-1">
-          {NAV.map(({ href, label }) => (
-            <Link key={href} href={href} onClick={() => setOpen(false)}
-              className={`flex items-center gap-2 px-3 py-3 rounded-xl text-sm font-medium transition-colors ${
-                pathname === href
-                  ? 'text-gray-900 bg-[#FACC15]'
-                  : 'text-gray-700 hover:bg-gray-50'
-              }`}
-            >
-              {label === 'AI Match' && <Sparkles size={14} className="text-gray-700" />}
-              {label}
-            </Link>
-          ))}
-          {!adminMode && (
-            <div onClick={() => setOpen(false)}>
-              <AdminButton variant="mobile-menu" />
-            </div>
-          )}
+          {NAV.map(({ href, label }) => {
+            const isAdminTab = label === 'Admin'
+            const isActive   = pathname === href || (href === '/admin' && pathname.startsWith('/admin'))
+            return (
+              <Link key={href} href={href}
+                onClick={() => {
+                  setOpen(false)
+                  if (isAdminTab) localStorage.setItem('lcardrive_admin_mode', 'true')
+                }}
+                className={`flex items-center gap-2 px-3 py-3 rounded-xl text-sm font-medium transition-colors ${
+                  isAdminTab
+                    ? 'text-yellow-700 bg-yellow-50 border border-yellow-200 font-bold'
+                    : isActive
+                      ? 'text-gray-900 bg-[#FACC15]'
+                      : 'text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                {label === 'AI Match' && <Sparkles size={14} className="text-gray-700" />}
+                {label === 'Admin' && <ShieldCheck size={14} className="text-yellow-600" />}
+                {label}
+              </Link>
+            )
+          })}
           {adminMode && (
             <button onClick={() => { setOpen(false); exitAdmin() }}
               className="w-full flex items-center justify-center gap-2 px-3 py-3 rounded-xl text-sm font-bold text-white bg-red-500 hover:bg-red-600 transition-colors mt-1"
