@@ -4,7 +4,7 @@
 
 **Live:** https://lcardrive.sashank.info
 
-**Repo:** https://github.com/sashank33vs/lcardrive
+**Repo:** https://github.com/sashank33v/lcardrive
 
 ---
 
