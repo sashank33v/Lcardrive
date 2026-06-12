@@ -12,6 +12,11 @@ import { supabaseServer } from '@/lib/clients/supabase-server'
 export const metadata: Metadata = {
   title: 'Find a Driving Instructor Near You | LCarDrive Melbourne',
   description: 'Find verified local driving instructors across Melbourne. Compare prices, read reviews, contact directly. Free, no commission, AI-matched.',
+  openGraph: {
+    url: 'https://lcardrive.sashank.info',
+    title: 'Find a Driving Instructor Near You | LCarDrive Melbourne',
+    description: 'Find verified local driving instructors across Melbourne.',
+  },
 }
 
 async function getStats() {
@@ -31,6 +36,15 @@ async function getStats() {
   return { verified: verified || 0, avg, total: (verified || 0) + 30, topInstructors: topInstructors || [] }
 }
 
+const SUBURBS = [
+  { name: 'Footscray',        slug: 'footscray',        count: 12 },
+  { name: 'Sunshine',         slug: 'sunshine',         count: 11 },
+  { name: 'St Kilda',         slug: 'st-kilda',         count: 8  },
+  { name: 'Werribee',         slug: 'werribee',         count: 9  },
+  { name: 'Hoppers Crossing', slug: 'hoppers-crossing', count: 7  },
+  { name: 'Dandenong',        slug: 'dandenong',        count: 10 },
+]
+
 export default async function HomePage() {
   const stats = await getStats()
 
@@ -47,41 +61,16 @@ export default async function HomePage() {
               Learn to drive with confidence.
             </h1>
 
-            {/* Search bar */}
-            <div className="max-w-2xl mb-6">
+            {/* Search card — pills are INSIDE this component, no duplicates */}
+            <div className="max-w-2xl mb-10">
               <HomeSearchCard />
-            </div>
-
-            {/* Filter pills */}
-            <div className="flex items-center gap-2 flex-wrap mb-10">
-              <Link
-                href="/search?transmission=auto"
-                className="px-5 py-2 rounded-full bg-[#FACC15] text-gray-900 text-sm font-semibold border border-[#FACC15] hover:bg-yellow-400 transition-colors"
-              >
-                Auto
-              </Link>
-              <Link
-                href="/search?transmission=manual"
-                className="px-5 py-2 rounded-full bg-white text-gray-700 text-sm font-medium border border-gray-200 hover:border-[#FACC15] hover:bg-yellow-50 transition-colors"
-              >
-                Manual
-              </Link>
-              <Link
-                href="/search?anxiety=true"
-                className="px-5 py-2 rounded-full bg-white text-gray-700 text-sm font-medium border border-gray-200 hover:border-[#FACC15] hover:bg-yellow-50 transition-colors"
-              >
-                Anxiety-friendly
-              </Link>
             </div>
 
             {/* Top Instructors */}
             <div className="max-w-2xl">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold text-gray-900">Top instructors</h2>
-                <Link
-                  href="/search"
-                  className="text-sm font-semibold text-gray-500 hover:text-gray-900 flex items-center gap-1 transition-colors"
-                >
+                <Link href="/search" className="text-sm font-semibold text-gray-500 hover:text-gray-900 flex items-center gap-1 transition-colors">
                   View all <ArrowRight size={14} />
                 </Link>
               </div>
@@ -127,10 +116,7 @@ export default async function HomePage() {
                           </div>
                           <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                             {instructor.transmission?.map((t: string) => (
-                              <span
-                                key={t}
-                                className="text-xs font-semibold px-2.5 py-1 rounded-full bg-yellow-50 text-yellow-700 border border-yellow-100 uppercase"
-                              >
+                              <span key={t} className="text-xs font-semibold px-2.5 py-1 rounded-full bg-yellow-50 text-yellow-700 border border-yellow-100 uppercase">
                                 {t}
                               </span>
                             ))}
@@ -197,27 +183,19 @@ export default async function HomePage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <div className="bg-yellow-50 border border-yellow-100 rounded-2xl p-5">
                 <Shield size={22} className="text-yellow-600 mb-3" />
-                <p className="text-sm font-medium text-gray-800 leading-snug">
-                  Verified & background checked instructors only.
-                </p>
+                <p className="text-sm font-medium text-gray-800 leading-snug">Verified & background checked instructors only.</p>
               </div>
               <div className="bg-gray-50 border border-gray-100 rounded-2xl p-5">
                 <Calendar size={22} className="text-gray-600 mb-3" />
-                <p className="text-sm font-medium text-gray-800 leading-snug">
-                  Instant booking with live availability.
-                </p>
+                <p className="text-sm font-medium text-gray-800 leading-snug">Instant booking with live availability.</p>
               </div>
               <div className="bg-yellow-50 border border-yellow-100 rounded-2xl p-5">
                 <Star size={22} className="text-yellow-600 mb-3" />
-                <p className="text-sm font-medium text-gray-800 leading-snug">
-                  Real student reviews you can trust.
-                </p>
+                <p className="text-sm font-medium text-gray-800 leading-snug">Real student reviews you can trust.</p>
               </div>
               <div className="bg-gray-50 border border-gray-100 rounded-2xl p-5">
                 <CheckCircle size={22} className="text-gray-600 mb-3" />
-                <p className="text-sm font-medium text-gray-800 leading-snug">
-                  Free to use. No commission, ever.
-                </p>
+                <p className="text-sm font-medium text-gray-800 leading-snug">Free to use. No commission, ever.</p>
               </div>
             </div>
           </section>
@@ -235,14 +213,7 @@ export default async function HomePage() {
                 </Link>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-                {[
-                  { name: 'Footscray',        slug: 'footscray',        count: 12 },
-                  { name: 'Sunshine',         slug: 'sunshine',         count: 11 },
-                  { name: 'St Kilda',         slug: 'st-kilda',         count: 8  },
-                  { name: 'Werribee',         slug: 'werribee',         count: 9  },
-                  { name: 'Hoppers Crossing', slug: 'hoppers-crossing', count: 7  },
-                  { name: 'Dandenong',        slug: 'dandenong',        count: 10 },
-                ].map(({ name, slug, count }) => (
+                {SUBURBS.map(({ name, slug, count }) => (
                   <Link key={slug} href={`/instructors-in/${slug}`}>
                     <div className="bg-white border border-gray-100 rounded-xl p-4 hover:border-[#FACC15] hover:bg-yellow-50 active:scale-[0.98] transition-all cursor-pointer h-24 flex flex-col justify-between">
                       <MapPin size={16} className="text-[#FACC15]" />
@@ -264,7 +235,7 @@ export default async function HomePage() {
                 <h2 className="text-xl font-bold text-gray-900">How it works</h2>
                 <p className="text-gray-500 text-sm mt-1">Simple, free, no sign-up required to search</p>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl md:max-w-none mx-auto">
                 {[
                   { n: '1', title: 'Search',  desc: 'Enter your suburb and filter by price, transmission, and needs.' },
                   { n: '2', title: 'Compare', desc: 'Read reviews, check prices and test centre knowledge.'           },
@@ -287,12 +258,10 @@ export default async function HomePage() {
           {/* ── INSTRUCTOR CTA ── */}
           <section className="py-10 px-4 bg-gray-50">
             <div className="max-w-5xl mx-auto">
-              <div className="bg-white border border-gray-100 rounded-2xl px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="bg-white border border-gray-100 rounded-2xl px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 max-w-2xl md:max-w-none mx-auto">
                 <div>
                   <p className="font-semibold text-gray-900">Are you a driving instructor?</p>
-                  <p className="text-gray-500 text-sm mt-0.5">
-                    Claim your free profile and get found by learners in your area.
-                  </p>
+                  <p className="text-gray-500 text-sm mt-0.5">Claim your free profile and get found by learners in your area.</p>
                 </div>
                 <Link href="/search" className="flex-shrink-0">
                   <button className="bg-[#FACC15] text-gray-900 font-semibold px-6 py-3 rounded-xl hover:bg-yellow-400 transition-colors whitespace-nowrap text-sm">

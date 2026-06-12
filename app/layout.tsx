@@ -7,7 +7,7 @@ import './globals.css'
 export const viewport: Viewport = {
   width:        'device-width',
   initialScale: 1,
-  themeColor:   '#1A3CFF',
+  themeColor:   '#FACC15',
 }
 
 export const metadata: Metadata = {
@@ -16,11 +16,11 @@ export const metadata: Metadata = {
     template: '%s | LCarDrive',
   },
   description: 'Find local, verified driving instructors across Melbourne. Compare prices, read reviews and contact instructors directly.',
-  metadataBase: new URL('https://lcardrive.com.au'),
+  metadataBase: new URL('https://lcardrive.sashank.info'),
   icons: { icon: '/favicon.ico' },
 }
 
-const skipLinkClass = 'sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:bg-blue-700 focus:text-white focus:px-4 focus:py-2 focus:rounded-xl focus:font-semibold focus:text-sm'
+const skipLinkClass = 'sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:bg-[#FACC15] focus:text-gray-900 focus:px-4 focus:py-2 focus:rounded-xl focus:font-semibold focus:text-sm'
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -29,7 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <head>
           <link rel="preconnect" href="https://mjwijdzcazwnidvfryhd.supabase.co" />
           <link rel="preconnect" href="https://api.locationiq.com" />
-          <link rel="dns-prefetch" href="https://big-leech-22.clerk.accounts.dev" />
+          <link rel="dns-prefetch" href="https://clerk.lcardrive.sashank.info" />
         </head>
         <body className={GeistSans.className} suppressHydrationWarning>
           <a href="#main-content" className={skipLinkClass}>Skip to main content</a>
@@ -39,7 +39,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             toastOptions={{
               duration: 3000,
               style: {
-                background:   '#1A2444',
+                background:   '#1a1a1a',
                 color:        '#fff',
                 borderRadius: '12px',
                 fontSize:     '14px',

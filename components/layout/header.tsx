@@ -36,17 +36,27 @@ function ShieldIcon({ gold = false }: { gold?: boolean }) {
 }
 
 export function Header() {
-  const pathname                  = usePathname()
-  const router                    = useRouter()
-  const [open, setOpen]           = useState(false)
-  const [adminMode, setAdminMode] = useState(false)
+  const pathname = usePathname()
+  const router   = useRouter()
+  const [open, setOpen] = useState(false)
 
+  // ── Read adminMode directly from localStorage on first render ──
+  const [adminMode, setAdminMode] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false
+    return (
+      window.location.pathname.startsWith('/admin') ||
+      localStorage.getItem('lcardrive_admin_mode') === 'true'
+    )
+  })
+
+  // ── Keep in sync when pathname changes ──
   useEffect(() => {
     if (pathname.startsWith('/admin')) {
       localStorage.setItem('lcardrive_admin_mode', 'true')
       setAdminMode(true)
     } else {
-      setAdminMode(localStorage.getItem('lcardrive_admin_mode') === 'true')
+      const stored = localStorage.getItem('lcardrive_admin_mode') === 'true'
+      setAdminMode(stored)
     }
   }, [pathname])
 
@@ -99,8 +109,10 @@ export function Header() {
             <span>Search instructors...</span>
           </Link>
 
+          {/* Show Admin button only when NOT in admin mode */}
           {!adminMode && <AdminButton variant="nav" />}
 
+          {/* Show Exit Admin button when IN admin mode */}
           {adminMode && (
             <button onClick={exitAdmin}
               className="flex items-center gap-1.5 text-xs font-bold text-white bg-red-500 px-3 py-1.5 rounded-xl hover:bg-red-600 active:scale-95 transition-all shadow-sm"
