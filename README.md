@@ -2,7 +2,7 @@
 
 > Australia's driving instructor aggregator — Find, compare, and connect with verified driving instructors across Melbourne and greater Australia.
 
-**Live:** https://lcardrive-gules.vercel.app  
+**Live:** https://lcardrive.sashank.info
 **Repo:** https://github.com/sashank33vs/lcardrive
 
 ---
@@ -39,7 +39,7 @@ LCarDrive is a directory and aggregator platform for driving instructors in Aust
 | Public instructor directory with suburb search | ✅ Built |
 | Individual instructor profile pages | ✅ Built |
 | Email-based sign-up / sign-in (Clerk) | ✅ Built |
-| Google OAuth login | ⚠️ Configured (pending custom domain) |
+| Google OAuth login | ✅ Built |
 | Instructor portal (profile management) | ✅ Built |
 | Review submission system | ✅ Built |
 | AI-powered instructor matching | ✅ Built |
