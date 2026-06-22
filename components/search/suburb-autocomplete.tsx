@@ -79,7 +79,7 @@ export function SuburbAutocomplete({ value, onChange, onSelect, placeholder = 'S
 
   return (
     <div ref={wrapperRef} className="relative">
-      <div className="flex items-center gap-2 bg-white rounded-xl px-4 py-3 border border-gray-200 focus-within:border-[#1A3CFF] transition-colors">
+      <div className="flex items-center gap-2 bg-white rounded-xl px-4 py-3 border border-gray-200 focus-within:border-[#FACC15] transition-colors">
         <Search size={18} className="text-gray-400 flex-shrink-0" />
         <input
           type="text"
@@ -105,7 +105,7 @@ export function SuburbAutocomplete({ value, onChange, onSelect, placeholder = 'S
               onClick={() => handleSelect(s)}
               className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0"
             >
-              <MapPin size={15} className="text-[#1A3CFF] flex-shrink-0" aria-hidden="true" />
+              <MapPin size={15} className="text-[#FACC15] flex-shrink-0" aria-hidden="true" />
               <span className="text-sm text-gray-700 truncate">{s.display}</span>
             </button>
           ))}
