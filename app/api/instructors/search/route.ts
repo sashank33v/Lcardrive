@@ -1,132 +1,86 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { searchInstructors } from '@/lib/repos/instructors.repo'
 import { supabaseServer } from '@/lib/clients/supabase-server'
 
-export async function searchInstructors(params: {
-  suburb?:       string
-  transmission?: string
-  max_price?:    number
-  anxiety?:      boolean
-  intl?:         boolean
-  sort?:         string
-  limit?:        number
-  offset?:       number
-  radius?:       number   // km radius for geographic search
-  lat?:          number   // latitude of searched suburb
-  lng?:          number   // longitude of searched suburb
-}) {
-  // ── If we have lat/lng + radius, use geographic ordering ──
-  if (params.lat && params.lng && params.radius) {
-    return searchByRadius(params)
-  }
-
-  // ── Fallback: text-based suburb search ──
-  let query = supabaseServer
-    .from('instructors')
-    .select(
-      'id, slug, first_name, last_name, suburb, state, postcode, hourly_rate, average_rating, review_count, transmission, is_verified, is_claimed, profile_photo_url, specialises_anxiety, accepts_international, years_experience, profile_completeness, languages, availability_days',
-      { count: 'exact' }
+async function geocodeSuburb(suburb: string): Promise<{ lat: number; lng: number } | null> {
+  try {
+    const { data } = await supabaseServer
+      .from('instructors')
+      .select('lat, lng, suburb')
+      .ilike('suburb', suburb)
+      .not('lat', 'is', null)
+      .limit(1)
+      .single()
+    if (data?.lat && data?.lng) return { lat: data.lat, lng: data.lng }
+    const apiKey = process.env.NEXT_PUBLIC_LOCATIONIQ_KEY
+    if (!apiKey) return null
+    const res   = await fetch(
+      `https://us1.locationiq.com/v1/search?key=${apiKey}&q=${encodeURIComponent(suburb + ', Victoria, Australia')}&format=json&limit=1`,
+      { next: { revalidate: 86400 } }
     )
-
-  if (params.suburb)       query = query.ilike('suburb', `%${params.suburb}%`)
-  if (params.transmission) query = query.or(`transmission.eq.${params.transmission},transmission.eq.both`)
-  if (params.max_price)    query = query.lte('hourly_rate', params.max_price)
-  if (params.anxiety)      query = query.eq('specialises_anxiety', true)
-  if (params.intl)         query = query.eq('accepts_international', true)
-
-  switch (params.sort) {
-    case 'price_asc': query = query.order('hourly_rate',          { ascending: true,  nullsFirst: false }); break
-    case 'rating':    query = query.order('average_rating',       { ascending: false, nullsFirst: false }); break
-    case 'newest':    query = query.order('created_at',           { ascending: false }); break
-    default:          query = query.order('profile_completeness',  { ascending: false }); break
+    const data2 = await res.json()
+    if (data2?.[0]?.lat && data2?.[0]?.lon) {
+      return { lat: parseFloat(data2[0].lat), lng: parseFloat(data2[0].lon) }
+    }
+    return null
+  } catch {
+    return null
   }
-
-  query = query.range(params.offset || 0, (params.offset || 0) + (params.limit || 20) - 1)
-  return query
 }
 
-// ── Geographic radius search with exact-suburb-first ordering ──
-async function searchByRadius(params: {
-  suburb?:       string
-  transmission?: string
-  max_price?:    number
-  anxiety?:      boolean
-  intl?:         boolean
-  limit?:        number
-  offset?:       number
-  radius?:       number
-  lat?:          number
-  lng?:          number
-}) {
-  const radiusMeters = (params.radius || 10) * 1000
-  const lat          = params.lat!
-  const lng          = params.lng!
+export async function GET(req: NextRequest) {
+  const sp              = req.nextUrl.searchParams
+  const suburb          = sp.get('suburb')          ?? undefined
+  const transmission    = sp.get('transmission')    ?? undefined
+  const maxPriceStr     = sp.get('maxPrice')
+  const maxPrice        = maxPriceStr ? Number(maxPriceStr) : undefined
+  const anxietyFriendly = sp.get('anxietyFriendly') === '1'
+  const international   = sp.get('international')   === '1'
+  const radiusStr       = sp.get('radius')
+  const radius          = radiusStr ? Number(radiusStr) : 10
 
-  // Earth radius in meters for distance calculation
-  // Using Supabase RPC with earthdistance or manual haversine via SQL
-  let query = supabaseServer
-    .from('instructors')
-    .select(
-      'id, slug, first_name, last_name, suburb, state, postcode, hourly_rate, average_rating, review_count, transmission, is_verified, is_claimed, profile_photo_url, specialises_anxiety, accepts_international, years_experience, profile_completeness, languages, availability_days, lat, lng',
-      { count: 'exact' }
-    )
-    .not('lat', 'is', null)
-    .not('lng', 'is', null)
+  const transmissionFilter = (!transmission || transmission === 'both')
+    ? undefined
+    : transmission
 
-  if (params.transmission) query = query.or(`transmission.eq.${params.transmission},transmission.eq.both`)
-  if (params.max_price)    query = query.lte('hourly_rate', params.max_price)
-  if (params.anxiety)      query = query.eq('specialises_anxiety', true)
-  if (params.intl)         query = query.eq('accepts_international', true)
+  let lat: number | undefined
+  let lng: number | undefined
 
-  const { data, error, count } = await query.limit(200)
+  if (suburb) {
+    const coords = await geocodeSuburb(suburb)
+    if (coords) { lat = coords.lat; lng = coords.lng }
+  }
 
-  if (error || !data) return { data: [], count: 0, error }
-
-  // ── Calculate distance and filter by radius ──
-  const withDistance = data
-    .map(i => {
-      const dlat  = ((i.lat  - lat)  * Math.PI) / 180
-      const dlng  = ((i.lng  - lng) * Math.PI) / 180
-      const a     =
-        Math.sin(dlat / 2) * Math.sin(dlat / 2) +
-        Math.cos((lat * Math.PI) / 180) *
-          Math.cos((i.lat * Math.PI) / 180) *
-          Math.sin(dlng / 2) * Math.sin(dlng / 2)
-      const c            = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-      const distanceKm   = 6371 * c
-      const isExactMatch = i.suburb?.toLowerCase() === params.suburb?.toLowerCase()
-      return { ...i, distance_km: Math.round(distanceKm * 10) / 10, is_exact_match: isExactMatch }
-    })
-    .filter(i => i.distance_km <= (params.radius || 10))
-
-  // ── Sort: exact suburb first, then by distance ascending ──
-  withDistance.sort((a, b) => {
-    if (a.is_exact_match && !b.is_exact_match) return -1
-    if (!a.is_exact_match && b.is_exact_match) return 1
-    return a.distance_km - b.distance_km
+  const result = await searchInstructors({
+    suburb,
+    transmission: transmissionFilter,
+    max_price:    maxPrice,
+    anxiety:      anxietyFriendly,
+    intl:         international,
+    radius:       lat && lng ? radius : undefined,
+    lat,
+    lng,
   })
 
-  const offset     = params.offset || 0
-  const limit      = params.limit  || 20
-  const paginated  = withDistance.slice(offset, offset + limit)
+  let instructors: any[] = result.data || []
 
-  return { data: paginated, count: withDistance.length, error: null }
-}
+  if (maxPrice && maxPrice > 0) {
+    instructors = instructors.filter(i =>
+      i.hourly_rate == null || Number(i.hourly_rate) <= maxPrice
+    )
+  }
 
-export async function getInstructorBySlug(slug: string) {
-  const { data } = await supabaseServer
-    .from('instructors')
-    .select('*')
-    .eq('slug', slug)
-    .single()
-  return data
-}
+  if (suburb) {
+    try {
+      await supabaseServer
+        .from('search_logs')
+        .insert({ suburb, results_count: instructors.length })
+    } catch {}
+  }
 
-export async function getAllSlugs() {
-  const { data } = await supabaseServer
-    .from('instructors')
-    .select('slug, suburb')
-    .not('slug', 'is', null)
-  return (data || []).map(i => ({
-    slug:   i.slug as string,
-    suburb: i.suburb.toLowerCase().replace(/\s+/g, '-'),
-  }))
+  return NextResponse.json({
+    instructors,
+    total:        instructors.length,
+    radius_used:  lat && lng ? radius : null,
+  })
 }
