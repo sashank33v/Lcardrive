@@ -27,10 +27,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title:       `Driving Instructors in ${suburb} | LCarDrive`,
       description: `Find the best driving instructors in ${suburb}. Verified professionals, competitive rates.`,
-      url:         `https://lcardrive.com.au/instructors-in/${suburbParam}`,
+      url:         `https://lcardrive.sashank.info/instructors-in/${suburbParam}`,
     },
     alternates: {
-      canonical: `https://lcardrive.com.au/instructors-in/${suburbParam}`,
+      canonical: `https://lcardrive.sashank.info/instructors-in/${suburbParam}`,
     },
   }
 }
@@ -68,18 +68,18 @@ export default async function SuburbPage({ params }: Props) {
       <Header />
 
       <BreadcrumbJsonLd items={[
-        { name: 'Home',   url: 'https://lcardrive.com.au' },
-        { name: 'Search', url: 'https://lcardrive.com.au/search' },
-        { name: `Instructors in ${suburb}`, url: `https://lcardrive.com.au/instructors-in/${suburbParam}` },
+        { name: 'Home',   url: 'https://lcardrive.sashank.info' },
+        { name: 'Search', url: 'https://lcardrive.sashank.info/search' },
+        { name: `Instructors in ${suburb}`, url: `https://lcardrive.sashank.info/instructors-in/${suburbParam}` },
       ]} />
 
       <main className="max-w-4xl mx-auto px-4 py-6 pb-28">
 
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-xs text-gray-500 mb-4">
-          <Link href="/" className="hover:text-[#1A3CFF]">Home</Link>
+          <Link href="/" className="hover:text-[#FACC15]">Home</Link>
           <span>/</span>
-          <Link href="/search" className="hover:text-[#1A3CFF]">Search</Link>
+          <Link href="/search" className="hover:text-[#FACC15]">Search</Link>
           <span>/</span>
           <span className="text-gray-900 font-medium">{suburb}</span>
         </nav>
@@ -87,7 +87,7 @@ export default async function SuburbPage({ params }: Props) {
         {/* Hero */}
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-2">
-            <MapPin size={20} className="text-[#1A3CFF]" />
+            <MapPin size={20} className="text-[#FACC15]" />
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
               Driving Instructors in {suburb}
             </h1>
@@ -106,7 +106,7 @@ export default async function SuburbPage({ params }: Props) {
             { label: 'Auto Available',    value: autoCount                           },
           ].map(({ label, value }) => (
             <div key={label} className="bg-white rounded-2xl p-4 text-center shadow-sm">
-              <p className="text-2xl font-bold text-[#1A3CFF]">{value}</p>
+              <p className="text-2xl font-bold text-[#FACC15]">{value}</p>
               <p className="text-xs text-gray-500 mt-0.5">{label}</p>
             </div>
           ))}
@@ -123,7 +123,7 @@ export default async function SuburbPage({ params }: Props) {
           <div className="flex flex-wrap gap-2 mt-3">
             {autoCount > 0   && <span className="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full">{autoCount} Automatic</span>}
             {manualCount > 0 && <span className="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full">{manualCount} Manual</span>}
-            {minPrice        && <span className="text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded-full">From ${minPrice}/hr</span>}
+            {minPrice        && <span className="text-xs bg-yellow-50 text-yellow-700 px-3 py-1 rounded-full">From ${minPrice}/hr</span>}
           </div>
         </div>
 
@@ -133,11 +133,11 @@ export default async function SuburbPage({ params }: Props) {
         </div>
 
         {/* CTA */}
-        <div className="bg-[#1A3CFF] rounded-2xl p-6 text-center">
+        <div className="bg-gray-900 rounded-2xl p-6 text-center">
           <h3 className="text-white font-bold text-lg mb-2">Not sure which instructor to choose?</h3>
           <p className="text-blue-200 text-sm mb-4">Let our AI match you with the perfect instructor based on your needs.</p>
           <Link href="/find-my-instructor">
-            <button className="bg-white text-[#1A3CFF] font-semibold px-6 py-2.5 rounded-xl text-sm hover:bg-blue-50 transition-colors">
+            <button className="bg-white text-[#FACC15] font-semibold px-6 py-2.5 rounded-xl text-sm hover:bg-yellow-50 transition-colors">
               ✦ Try AI Match
             </button>
           </Link>
