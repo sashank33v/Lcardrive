@@ -78,9 +78,9 @@ export default async function SuburbPage({ params }: Props) {
         {/* Breadcrumb */}
         <nav className="flex items-center gap-1.5 text-xs text-gray-500 mb-4 whitespace-nowrap">
           <Link href="/" className="hover:text-[#FACC15]">Home</Link>
-          <span className="mx-1 text-gray-300">/></span>
+          <span className="mx-1 text-gray-300">/</span>
           <Link href="/search" className="hover:text-[#FACC15]">Search</Link>
-          <span className="mx-1 text-gray-300">/></span>
+          <span className="mx-1 text-gray-300">/</span>
           <span className="text-gray-900 font-medium">{suburb}</span>
         </nav>
 
