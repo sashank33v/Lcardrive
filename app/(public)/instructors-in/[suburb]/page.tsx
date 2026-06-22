@@ -64,7 +64,7 @@ export default async function SuburbPage({ params }: Props) {
   const minPrice    = withPrice.length ? Math.min(...withPrice.map(i => i.hourly_rate)) : null
 
   return (
-    <div className="min-h-screen bg-[#F0F2FF]">
+    <div className="min-h-screen bg-white">
       <Header />
 
       <BreadcrumbJsonLd items={[
