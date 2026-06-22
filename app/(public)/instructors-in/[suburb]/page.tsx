@@ -67,7 +67,7 @@ export default async function SuburbPage({ params }: Props) {
     <div className="min-h-screen bg-white">
       <Header />
 
-      <BreadcrumbJsonLd items={[
+      <BreadcrumbJsonLd hidden items={[
         { name: 'Home',   url: 'https://lcardrive.sashank.info' },
         { name: 'Search', url: 'https://lcardrive.sashank.info/search' },
         { name: `Instructors in ${suburb}`, url: `https://lcardrive.sashank.info/instructors-in/${suburbParam}` },
@@ -76,11 +76,11 @@ export default async function SuburbPage({ params }: Props) {
       <main className="max-w-4xl mx-auto px-4 py-6 pb-28">
 
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-xs text-gray-500 mb-4">
+        <nav className="flex items-center gap-1.5 text-xs text-gray-500 mb-4 whitespace-nowrap">
           <Link href="/" className="hover:text-[#FACC15]">Home</Link>
-          <span>/</span>
+          <span className="mx-1 text-gray-300">/></span>
           <Link href="/search" className="hover:text-[#FACC15]">Search</Link>
-          <span>/</span>
+          <span className="mx-1 text-gray-300">/></span>
           <span className="text-gray-900 font-medium">{suburb}</span>
         </nav>
 
