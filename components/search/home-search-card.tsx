@@ -38,7 +38,7 @@ export function HomeSearchCard() {
         onClick={handleSearch}
         className="w-full bg-[#FACC15] text-gray-900 font-semibold py-3.5 rounded-xl hover:bg-yellow-400 active:bg-yellow-500 transition-colors"
       >
-        Search Instructors
+        Search Suburb
       </button>
 
       {/* Quick filter chips */}
