@@ -67,7 +67,7 @@ export default async function SuburbPage({ params }: Props) {
     <div className="min-h-screen bg-white">
       <Header />
 
-      <BreadcrumbJsonLd hidden items={[
+      <BreadcrumbJsonLd items={[
         { name: 'Home',   url: 'https://lcardrive.sashank.info' },
         { name: 'Search', url: 'https://lcardrive.sashank.info/search' },
         { name: `Instructors in ${suburb}`, url: `https://lcardrive.sashank.info/instructors-in/${suburbParam}` },
