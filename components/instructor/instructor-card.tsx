@@ -93,13 +93,13 @@ export function InstructorCard({
         </div>
 
         {/* Rating */}
-        {average_rating && (
+        {true && (
           <div className="flex items-center gap-1 mb-3">
             <Star size={12} className="text-[#FACC15] fill-[#FACC15]" />
             <span className="text-sm font-semibold text-gray-700">
-              {Number(average_rating).toFixed(1)}
+              {average_rating ? Number(average_rating).toFixed(1) : "New"}
             </span>
-            <span className="text-xs text-gray-400">({review_count} reviews)</span>
+            <span className="text-xs text-gray-400">({review_count > 0 ? `${review_count} reviews` : "No reviews yet"})</span>
           </div>
         )}
 
