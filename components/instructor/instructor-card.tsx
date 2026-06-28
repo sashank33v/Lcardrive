@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { MapPin, Star, CheckCircle, Car, Brain, Globe, Sparkles } from 'lucide-react'
+import { MapPin, CheckCircle, Car, Brain, Globe, Sparkles } from 'lucide-react'
 
 interface Props {
   id:                     string
@@ -93,16 +93,24 @@ export function InstructorCard({
         </div>
 
         {/* Rating */}
-        {true && (
-          <div className="flex items-center gap-1 mb-3">
-            <Star size={12} className="text-[#FACC15] fill-[#FACC15]" />
-            <span className="text-sm font-semibold text-gray-700">
-              {average_rating ? Number(average_rating).toFixed(1) : "New"}
-            </span>
-            <span className="text-xs text-gray-400">({review_count > 0 ? `${review_count} reviews` : "No reviews yet"})</span>
+        <div className="flex items-center gap-1.5 mb-3">
+          <div className="flex items-center gap-0.5">
+            {[1,2,3,4,5].map(star => {
+              const r = average_rating ? Number(average_rating) : 0
+              const filled = r >= star
+              const partial = !filled && r > star - 1
+              const pct = partial ? Math.round((r - (star-1)) * 100) : 0
+              return (
+                <span key={star} className="relative inline-block" style={{width:14,height:14}}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="1.5"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
+                  {(filled||partial)&&<span className="absolute inset-0 overflow-hidden" style={{width:filled?'100%':`${pct}%`}}><svg width="14" height="14" viewBox="0 0 24 24" fill="#FACC15" stroke="#FACC15" strokeWidth="1.5"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg></span>}
+                </span>
+              )
+            })}
           </div>
-        )}
-        )}
+          <span className="text-sm font-semibold text-gray-700">{average_rating ? Number(average_rating).toFixed(1) : 'New'}</span>
+          <span className="text-xs text-gray-400">({review_count > 0 ? `${review_count} reviews` : 'No reviews yet'})</span>
+        </div>
 
         {/* Tags */}
         <div className="flex gap-1.5 flex-wrap mb-3">
