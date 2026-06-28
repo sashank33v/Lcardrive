@@ -18,7 +18,7 @@ import { supabaseServer } from '@/lib/clients/supabase-server'
 export const revalidate = 3600
 
 const GRADS = [
-  'from-blue-700 to-blue-900',
+  'from-gray-700 to-gray-900',
   'from-indigo-700 to-indigo-900',
   'from-teal-700 to-teal-900',
   'from-violet-700 to-violet-900',
@@ -97,7 +97,7 @@ export default async function ProfilePage({ params }: Props) {
         { name: `${instructor.first_name} ${instructor.last_name}`, url: `/instructors/${suburb}/${slug}` },
       ]} />
 
-      <div className="min-h-screen bg-[#F0F2FF] flex flex-col">
+      <div className="min-h-screen bg-white flex flex-col">
         <Header />
         <main id="main-content" className="flex-1">
 
@@ -181,7 +181,7 @@ export default async function ProfilePage({ params }: Props) {
                         </span>
                       )}
                       {instructor.years_experience && (
-                        <span className="text-xs bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full font-medium">
+                        <span className="text-xs bg-yellow-50 text-yellow-700 px-3 py-1.5 rounded-full font-medium">
                           {instructor.years_experience}+ years experience
                         </span>
                       )}
@@ -214,8 +214,8 @@ export default async function ProfilePage({ params }: Props) {
                   <div className="bg-white rounded-2xl p-6">
                     <h2 className="font-bold text-gray-900 mb-3 text-lg">Teaching Vehicle</h2>
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                        <Car size={22} className="text-[#1A3CFF]" />
+                      <div className="w-12 h-12 bg-yellow-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <Car size={22} className="text-[#FACC15]" />
                       </div>
                       <div>
                         <p className="font-semibold text-gray-900">
@@ -231,14 +231,14 @@ export default async function ProfilePage({ params }: Props) {
                 )}
 
                 {/* Availability */}
-                {(instructor.availability_days || []).length > 0 && (
+                {true && (
                   <div className="bg-white rounded-2xl p-6">
                     <h2 className="font-bold text-gray-900 mb-4 text-lg flex items-center gap-2">
-                      <Calendar size={18} className="text-[#1A3CFF]" /> Availability
+                      <Calendar size={18} className="text-[#FACC15]" /> Availability
                     </h2>
                     <div className="flex gap-2 flex-wrap mb-3">
                       {(instructor.availability_days || []).map((d: string) => (
-                        <span key={d} className="text-xs font-semibold bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full">
+                        <span key={d} className="text-xs font-semibold bg-yellow-50 text-yellow-700 px-3 py-1.5 rounded-full">
                           {DAY_MAP[d] || d}
                         </span>
                       ))}
@@ -263,7 +263,7 @@ export default async function ProfilePage({ params }: Props) {
                     <div className="flex flex-wrap gap-2">
                       {instructor.familiar_test_centres.map((c: string) => (
                         <span key={c} className="flex items-center gap-1.5 text-sm text-gray-700 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-xl">
-                          <MapPin size={12} className="text-[#1A3CFF]" /> {c}
+                          <MapPin size={12} className="text-[#FACC15]" /> {c}
                         </span>
                       ))}
                     </div>
@@ -369,7 +369,7 @@ export default async function ProfilePage({ params }: Props) {
                         {packages.map((p: any) => (
                           <div key={p.key} className="flex justify-between text-sm py-1.5 border-b border-gray-50 last:border-0">
                             <span className="text-gray-600">{p.label}</span>
-                            <span className="font-semibold text-blue-700">${p.price}</span>
+                            <span className="font-semibold text-yellow-700">${p.price}</span>
                           </div>
                         ))}
                       </div>
@@ -378,7 +378,7 @@ export default async function ProfilePage({ params }: Props) {
                     <div className="space-y-2.5">
                       {instructor.phone && (
                         <a href={`tel:${instructor.phone}`}
-                          className="w-full flex items-center justify-center gap-2 bg-[#1A3CFF] text-white font-semibold py-3 rounded-xl hover:bg-blue-700 transition-colors"
+                          className="w-full flex items-center justify-center gap-2 bg-[#FACC15] text-gray-900 font-semibold py-3 rounded-xl hover:bg-yellow-400 transition-colors"
                         >
                           <Phone size={16} /> Call {instructor.first_name}
                         </a>
@@ -431,7 +431,7 @@ export default async function ProfilePage({ params }: Props) {
                   </div>
 
                   {/* AI match prompt */}
-                  <div className="bg-gradient-to-br from-purple-600 to-[#1A3CFF] rounded-2xl p-4">
+                  <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-4">
                     <p className="text-white font-semibold text-sm mb-1 flex items-center gap-2">
                       <Sparkles size={14} /> Not sure this is the one?
                     </p>
