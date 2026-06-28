@@ -187,7 +187,7 @@ export default async function HomePage() {
               </div>
               <div className="bg-gray-50 border border-gray-100 rounded-2xl p-5">
                 <Calendar size={22} className="text-gray-600 mb-3" />
-                <p className="text-sm font-medium text-gray-800 leading-snug">Instant booking with live availability.</p>
+                <p className="text-sm font-medium text-gray-800 leading-snug">Contact instructors directly — no middleman.</p>
               </div>
               <div className="bg-yellow-50 border border-yellow-100 rounded-2xl p-5">
                 <Star size={22} className="text-yellow-600 mb-3" />
@@ -263,7 +263,7 @@ export default async function HomePage() {
                   <p className="font-semibold text-gray-900">Are you a driving instructor?</p>
                   <p className="text-gray-500 text-sm mt-0.5">Claim your free profile and get found by learners in your area.</p>
                 </div>
-                <Link href="/search" className="flex-shrink-0">
+                <Link href="/search?mode=claim" className="flex-shrink-0">
                   <button className="bg-[#FACC15] text-gray-900 font-semibold px-6 py-3 rounded-xl hover:bg-yellow-400 transition-colors whitespace-nowrap text-sm">
                     Claim free profile
                   </button>
