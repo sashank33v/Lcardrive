@@ -102,6 +102,7 @@ export function InstructorCard({
             <span className="text-xs text-gray-400">({review_count > 0 ? `${review_count} reviews` : "No reviews yet"})</span>
           </div>
         )}
+        )}
 
         {/* Tags */}
         <div className="flex gap-1.5 flex-wrap mb-3">
